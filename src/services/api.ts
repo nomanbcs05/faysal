@@ -91,7 +91,7 @@ export const api = {
         .maybeSingle();
 
       if (error) throw error;
-      return data as DailyRegister | null;
+      return (data as any) as DailyRegister | null;
     },
     start: async (startingAmount: number, openedAt?: string) => {
       const restaurantId = await getRestaurantId();
@@ -109,7 +109,7 @@ export const api = {
         .single();
 
       if (error) throw error;
-      return data as DailyRegister;
+      return (data as any) as DailyRegister;
     },
     close: async (id: string, endingAmount: number, notes?: string) => {
       const { data, error } = await supabase
@@ -125,7 +125,7 @@ export const api = {
         .single();
 
       if (error) throw error;
-      return data as DailyRegister;
+      return (data as any) as DailyRegister;
     }
   },
   categories: {
@@ -306,7 +306,7 @@ export const api = {
         .order('name');
       
       if (error && error.code !== 'PGRST116') throw error;
-      return (data || []) as ProductAddon[];
+      return (data as any || []) as ProductAddon[];
     },
     create: async (addon: Omit<ProductAddon, 'id' | 'created_at'>) => {
       const restaurantId = await getRestaurantId();
@@ -319,7 +319,7 @@ export const api = {
         .single();
       
       if (error) throw error;
-      return data as ProductAddon;
+      return (data as any) as ProductAddon;
     },
     delete: async (id: string) => {
       const { error } = await supabase
@@ -341,7 +341,7 @@ export const api = {
         .order('name');
       
       if (error && error.code !== 'PGRST116') throw error;
-      return (data || []) as Kitchen[];
+      return (data as any || []) as Kitchen[];
     },
     create: async (name: string) => {
       const restaurantId = await getRestaurantId();
@@ -354,7 +354,7 @@ export const api = {
         .single();
       
       if (error) throw error;
-      return data as Kitchen;
+      return (data as any) as Kitchen;
     }
   },
   customers: {
@@ -460,7 +460,6 @@ export const api = {
         .select(`
           *,
           customers(name, phone, email),
-          restaurant_tables(table_number),
           order_items(
             *,
             products(id, name, price, image, category, cost, stock)
@@ -503,8 +502,7 @@ export const api = {
         payment_method: order.payment_method || 'cash',
         order_type: order.order_type || 'dine_in',
         restaurant_id: restaurantId,
-        customer_id: order.customer_id || null,
-        table_id: order.table_id || null
+        customer_id: order.customer_id || null
       };
 
       const { data: newOrder, error: orderError } = await supabase
@@ -540,8 +538,7 @@ export const api = {
         status: order.status || 'pending',
         payment_method: order.payment_method || 'cash',
         order_type: order.order_type || 'dine_in',
-        customer_id: order.customer_id || null,
-        table_id: order.table_id || null
+        customer_id: order.customer_id || null
       };
 
       const { error: orderError } = await supabase
@@ -586,7 +583,6 @@ export const api = {
         .select(`
           *,
           customers(name, phone),
-          restaurant_tables(table_number),
           order_items(
             *,
             products(name, image)
@@ -729,6 +725,19 @@ export const api = {
         .delete()
         .eq('id', id);
       if (error) throw error;
+    },
+    getByRestaurant: async (restaurantId: string) => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('restaurant_id', restaurantId);
+      if (error) throw error;
+      return data;
+    },
+    changePassword: async (password: string) => {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      return true;
     }
   }
 };

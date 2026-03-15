@@ -36,9 +36,6 @@ const RiderSelectionModal = ({ isOpen, onClose }: RiderSelectionModalProps) => {
     <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) {
         setSelectedRider(null);
-        setAddress('');
-        setCustomerName('');
-        setCustomerPhone('');
         onClose();
       }
     }}>

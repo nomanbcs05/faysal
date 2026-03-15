@@ -31,7 +31,7 @@ const TableSelectionModal = ({ isOpen, onClose }: TableSelectionModalProps) => {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: number; status: TableStatus }) => {
+    mutationFn: async ({ id, status }: { id: string; status: TableStatus }) => {
       return api.tables.updateStatus(id, status);
     },
     onSuccess: () => {
@@ -62,7 +62,7 @@ const TableSelectionModal = ({ isOpen, onClose }: TableSelectionModalProps) => {
     if (table.status !== 'available') return;
 
     // Optimistically update UI
-    setTableId(table.table_id);
+    setTableId(table.id);
     setOrderType('dine_in');
     
     // Check if server is selected, if not show reminder but allow proceeding
@@ -75,7 +75,7 @@ const TableSelectionModal = ({ isOpen, onClose }: TableSelectionModalProps) => {
 
     // Perform server update in background
     updateStatusMutation.mutate({ 
-      id: table.table_id, 
+      id: table.id, 
       status: 'occupied' 
     });
   };
@@ -91,7 +91,7 @@ const TableSelectionModal = ({ isOpen, onClose }: TableSelectionModalProps) => {
     e.stopPropagation(); // Prevent selecting the table
     
     updateStatusMutation.mutate({ 
-      id: table.table_id, 
+      id: table.id, 
       status: 'available' 
     });
     
@@ -222,7 +222,7 @@ const TableSelectionModal = ({ isOpen, onClose }: TableSelectionModalProps) => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 pb-4">
                   {filteredTables.map((table: any) => (
                     <div
-                      key={table.table_id}
+                      key={table.id}
                       onClick={() => handleTableSelect(table)}
                       className={cn(
                         "relative border-2 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 transition-all duration-300 group",
