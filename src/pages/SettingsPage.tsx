@@ -177,7 +177,6 @@ const SettingsPage = () => {
           id: authData.user.id,
           restaurant_id: restaurant.id,
           full_name: staffName,
-          email: staffEmail,
           role: 'cashier',
         });
 

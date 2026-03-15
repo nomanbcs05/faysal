@@ -133,7 +133,7 @@ const SuperAdminDashboard = () => {
 
       const { error: profileError } = await supabaseSignup
         .from('profiles')
-        .upsert({ id: userId, restaurant_id: restaurant.id, full_name: fullName, email, role: 'admin' });
+        .upsert({ id: userId, restaurant_id: restaurant.id, full_name: fullName, role: 'admin' });
       if (profileError) throw new Error(`Profile: ${profileError.message}`);
 
       return restaurant;
