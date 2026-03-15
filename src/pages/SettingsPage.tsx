@@ -1,4 +1,4 @@
-import { Store, Receipt, Users, CreditCard, Bell, Shield, Lock, Trash2, Edit, Image as ImageIcon, Upload } from 'lucide-react';
+import { Store, Receipt, Users, CreditCard, Bell, Shield, Lock, Trash2, Edit, Image as ImageIcon, Upload, Mail, UserPlus, PlusCircle, Send, Loader2 } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import { api } from '@/services/api';
 import { toast } from 'sonner';
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { supabaseSignup } from '@/integrations/supabase/supabaseAdmin';
 
 const SettingsPage = () => {
   const { profile, restaurant, isAdmin } = useMultiTenant();
@@ -35,6 +36,12 @@ const SettingsPage = () => {
   const [cashier1Label, setCashier1Label] = useState(localStorage.getItem('role_label_cashier') || 'Admin');
   const [cashier2Label, setCashier2Label] = useState(localStorage.getItem('role_label_cashier2') || 'Cashier 2');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Staff creation form state
+  const [showStaffForm, setShowStaffForm] = useState(false);
+  const [staffName, setStaffName] = useState('');
+  const [staffEmail, setStaffEmail] = useState('');
+  const [staffPassword, setStaffPassword] = useState('');
 
   useEffect(() => {
     if (restaurant) {
@@ -143,6 +150,53 @@ const SettingsPage = () => {
       }
     }
   };
+
+  const createStaffMutation = useMutation({
+    mutationFn: async () => {
+      if (!restaurant?.id) throw new Error('No restaurant selected');
+      if (!staffEmail || !staffPassword || !staffName) throw new Error('All fields are required');
+
+      // 1. Create Auth User (using isolated client to avoid logout)
+      const { data: authData, error: authError } = await supabaseSignup.auth.signUp({
+        email: staffEmail,
+        password: staffPassword,
+        options: {
+          data: {
+            full_name: staffName,
+          },
+        },
+      });
+
+      if (authError) throw authError;
+      if (!authData.user) throw new Error('Failed to create user account');
+
+      // 2. Create Profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user.id,
+          restaurant_id: restaurant.id,
+          full_name: staffName,
+          email: staffEmail,
+          role: 'cashier',
+        });
+
+      if (profileError) throw profileError;
+      
+      return authData.user;
+    },
+    onSuccess: () => {
+      toast.success('Staff member created successfully');
+      setStaffName('');
+      setStaffEmail('');
+      setStaffPassword('');
+      setShowStaffForm(false);
+      queryClient.invalidateQueries({ queryKey: ['staff', restaurant?.id] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to create staff member');
+    },
+  });
 
   return (
     <MainLayout>
@@ -541,9 +595,77 @@ const SettingsPage = () => {
                         </div>
                       ))}
                     </div>
-                    <Button className="w-full bg-slate-900 text-white hover:bg-slate-800">
-                      Invite New Staff Member
-                    </Button>
+
+                    {!showStaffForm ? (
+                      <Button 
+                        onClick={() => setShowStaffForm(true)}
+                        className="w-full bg-slate-900 text-white hover:bg-slate-800"
+                      >
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Invite New Staff Member
+                      </Button>
+                    ) : (
+                      <Card className="border-slate-200 bg-slate-50/50">
+                        <CardHeader className="py-4">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <PlusCircle className="h-4 w-4 text-primary" />
+                            Add New Cashier
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="staffName">Full Name</Label>
+                            <Input
+                              id="staffName"
+                              placeholder="Staff Member Name"
+                              value={staffName}
+                              onChange={(e) => setStaffName(e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="staffEmail">Email Address</Label>
+                            <Input
+                              id="staffEmail"
+                              type="email"
+                              placeholder="staff@example.com"
+                              value={staffEmail}
+                              onChange={(e) => setStaffEmail(e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="staffPassword">Password (6+ chars)</Label>
+                            <Input
+                              id="staffPassword"
+                              type="password"
+                              placeholder="••••••••"
+                              value={staffPassword}
+                              onChange={(e) => setStaffPassword(e.target.value)}
+                            />
+                          </div>
+                          <div className="flex gap-2 pt-2">
+                            <Button 
+                              variant="outline" 
+                              className="flex-1"
+                              onClick={() => setShowStaffForm(false)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button 
+                              className="flex-1"
+                              onClick={() => createStaffMutation.mutate()}
+                              disabled={createStaffMutation.isPending || !staffName || !staffEmail || staffPassword.length < 6}
+                            >
+                              {createStaffMutation.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              ) : (
+                                <Send className="h-4 w-4 mr-2" />
+                              )}
+                              Create Account
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
                   </div>
                 </CardContent>
               </Card>
