@@ -39,15 +39,7 @@ const Welcome = () => {
         <p className="text-white/80 text-lg font-medium">Select your role to continue</p>
       </motion.div>
 
-      <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
-        {/* Admin Card */}
-        <RoleCard
-          title="Administrator"
-          icon={Shield}
-          description="Full access to all settings and reports"
-          onSelect={() => handleRoleSelect("admin")}
-        />
-
+      <div className="relative z-10 w-full max-w-3xl grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
         {/* Cashier Card */}
         <RoleCard
           title="Anas"

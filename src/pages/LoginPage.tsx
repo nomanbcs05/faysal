@@ -15,7 +15,7 @@ type Role = "admin" | "cashier" | "cashier2";
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const role = (location.state?.role as Role) || "cashier";
+  const role = (location.state?.role as Role) || (new URLSearchParams(window.location.search).get('role') as Role) || "cashier";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
