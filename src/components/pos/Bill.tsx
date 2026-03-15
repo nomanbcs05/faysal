@@ -76,9 +76,10 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
             )}
           </>
         )}
-        <p className="text-[9px] mt-1 border-t border-dotted border-black pt-1">
-          Designed & Developed By Genai Tech
+        <p className="text-[9px] mt-1 border-t border-dotted border-black pt-1 font-bold">
+          Powered By GENAI TECHNOLOGY Nawabshah
         </p>
+        <p className="text-[9px] font-bold">Contact: +92 334 2826675</p>
       </div>
 
       {/* Order Number Box */}

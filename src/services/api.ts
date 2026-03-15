@@ -28,6 +28,17 @@ const isValidUUID = (uuid: string) => {
   return uuidRegex.test(uuid);
 };
 
+const getRestaurantId = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return null;
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('restaurant_id')
+    .eq('id', session.user.id)
+    .single();
+  return profile?.restaurant_id || null;
+};
+
 export interface Category {
   id: string;
   name: string;
@@ -69,9 +80,13 @@ export interface DailyRegister {
 export const api = {
   registers: {
     getOpen: async () => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) return null;
+
       const { data, error } = await supabase
         .from('daily_registers' as any)
         .select('*')
+        .eq('restaurant_id', restaurantId)
         .eq('status', 'open')
         .maybeSingle();
 
@@ -79,12 +94,16 @@ export const api = {
       return data as DailyRegister | null;
     },
     start: async (startingAmount: number, openedAt?: string) => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) throw new Error('Not authenticated');
+
       const { data, error } = await supabase
         .from('daily_registers' as any)
         .insert({
           starting_amount: startingAmount,
           status: 'open',
-          opened_at: openedAt || new Date().toISOString()
+          opened_at: openedAt || new Date().toISOString(),
+          restaurant_id: restaurantId
         } as any)
         .select()
         .single();
@@ -111,17 +130,24 @@ export const api = {
   },
   categories: {
     getAll: async () => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) return [];
+
       const { data, error } = await supabase
-        .from('categories' as any)
+        .from('categories')
         .select('*')
+        .eq('restaurant_id', restaurantId)
         .order('name');
       if (error) throw error;
       return data as Category[];
     },
     create: async (category: Omit<Category, 'id'>) => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) throw new Error('Not authenticated');
+
       const { data, error } = await supabase
         .from('categories')
-        .insert(category as any)
+        .insert({ ...category, restaurant_id: restaurantId })
         .select()
         .single();
       if (error) throw error;
@@ -136,68 +162,53 @@ export const api = {
     }
   },
   products: {
-    seedArabicBroast: async () => {
+    seedMenu: async () => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) throw new Error('Not authenticated');
+
       const items = [
+        // Arabic Broast
         { name: "Skin Spicy Injected Full Kukkar", price: 2000, cost: 0, sku: "SIB-FULL-K", category: "Arabic Broast", image: "🍗", stock: 100 },
         { name: "Skin Spicy injected Broast Leg/Thai 2Pcs", price: 600, cost: 0, sku: "SIB-LT-2", category: "Arabic Broast", image: "🍗", stock: 100 },
         { name: "Skin Spicy injected Broast Chest/Wing 2Pcs", price: 600, cost: 0, sku: "SIB-CW-2", category: "Arabic Broast", image: "🍗", stock: 100 },
         { name: "Skin Spicy injected Half Broast 4Pcs", price: 1100, cost: 0, sku: "SIB-HALF-4", category: "Arabic Broast", image: "🍗", stock: 100 },
         { name: "Skin Spicy injected Full Broast 8Pcs", price: 2200, cost: 0, sku: "SIB-FULL-8", category: "Arabic Broast", image: "🍗", stock: 100 },
-        { name: "COMBO 1 (1 Qtr Broast, 1 Zinger, Drink, Bun, Fries)", price: 999, cost: 0, sku: "COMBO-1", category: "Arabic Broast", image: "🍱", stock: 100 },
-        { name: "COMBO 2 (Half Broast, Fries, 2 Bun, 2 Sauce, Drink)", price: 1300, cost: 0, sku: "COMBO-2", category: "Arabic Broast", image: "🍱", stock: 100 },
-        { name: "COMBO 3 (Full Broast, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 2450, cost: 0, sku: "COMBO-3", category: "Arabic Broast", image: "🍱", stock: 100 },
-        { name: "COMBO 4 (Jumbo Pizza, 1 Kukkar, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 3500, cost: 0, sku: "COMBO-4", category: "Arabic Broast", image: "🍱", stock: 100 },
         // Beverages
-        { name: "Next Cola / Fizz Up 345 ml", price: 80, cost: 0, sku: "DRINK-345", category: "Beverages", image: "", stock: 100 },
-        { name: "Next Cola / Fizz Up 500 ml", price: 120, cost: 0, sku: "DRINK-500", category: "Beverages", image: "", stock: 100 },
-        { name: "Next Cola / Fizz Up 1 liter", price: 150, cost: 0, sku: "DRINK-1L", category: "Beverages", image: "", stock: 100 },
-        { name: "Next Cola / KababJees 1.5 liter", price: 200, cost: 0, sku: "DRINK-1.5L", category: "Beverages", image: "", stock: 100 },
-        { name: "Next Cola / Fizz Up Jumbo", price: 250, cost: 0, sku: "DRINK-JUMBO", category: "Beverages", image: "", stock: 100 },
-        { name: "Sting 500 ml", price: 130, cost: 0, sku: "DRINK-STING", category: "Beverages", image: "", stock: 100 },
-        { name: "Mineral Water Small", price: 50, cost: 0, sku: "WATER-S", category: "Beverages", image: "", stock: 100 },
-        { name: "Mineral Water Large", price: 100, cost: 0, sku: "WATER-L", category: "Beverages", image: "", stock: 100 },
-        // ALA CART Items
+        { name: "Next Cola / Fizz Up 345 ml", price: 80, cost: 0, sku: "DRINK-345", category: "Beverages", image: "🥤", stock: 100 },
+        { name: "Mineral Water Small", price: 50, cost: 0, sku: "WATER-S", category: "Beverages", image: "💧", stock: 100 },
+        // ALA CART
         { name: "Club Sandwich", price: 400, cost: 0, sku: "ALC-CLUB-S", category: "ALA CART", image: "🥪", stock: 100 },
-        { name: "Malai Boti Sandwich", price: 450, cost: 0, sku: "ALC-MALAI-S", category: "ALA CART", image: "🥪", stock: 100 },
-        { name: "Mexican Sandwich", price: 500, cost: 0, sku: "ALC-MEX-S", category: "ALA CART", image: "🥪", stock: 100 },
-        { name: "Spring Rolls 4 Pcs", price: 400, cost: 0, sku: "ALC-ROLLS-4", category: "ALA CART", image: "🌯", stock: 100 },
-        { name: "Macroni Pasta Large", price: 650, cost: 0, sku: "ALC-MAC-L", category: "ALA CART", image: "🍝", stock: 100 },
-        { name: "Macroni Pasta Small", price: 350, cost: 0, sku: "ALC-MAC-S", category: "ALA CART", image: "🍝", stock: 100 },
-        { name: "Oven Backed Wings 6Pcs", price: 350, cost: 0, sku: "ALC-OBW-6", category: "ALA CART", image: "🍗", stock: 100 },
-        { name: "Oven Backed Wings 12Pcs", price: 650, cost: 0, sku: "ALC-OBW-12", category: "ALA CART", image: "🍗", stock: 100 },
-        { name: "Crispy Wings 6Pcs", price: 350, cost: 0, sku: "ALC-CW-6", category: "ALA CART", image: "🍗", stock: 100 },
-        { name: "Crispy Wings 12Pcs", price: 650, cost: 0, sku: "ALC-CW-12", category: "ALA CART", image: "🍗", stock: 100 },
-        { name: "Hotshot 10Pcs", price: 450, cost: 0, sku: "ALC-HS-10", category: "ALA CART", image: "🍿", stock: 100 },
-        { name: "Hotshot 5Pcs", price: 250, cost: 0, sku: "ALC-HS-5", category: "ALA CART", image: "🍿", stock: 100 },
-        // Snacks (Fries)
-        { name: "Plain Fries", price: 150, cost: 0, sku: "SNK-FRIES-P", category: "Snacks", image: "", stock: 100 },
-        { name: "Masala Fries", price: 170, cost: 0, sku: "SNK-FRIES-M", category: "Snacks", image: "", stock: 100 },
-        { name: "Garlic Mayo Fries", price: 200, cost: 0, sku: "SNK-FRIES-GM", category: "Snacks", image: "", stock: 100 },
-        { name: "Loaded Fries", price: 300, cost: 0, sku: "SNK-FRIES-L", category: "Snacks", image: "", stock: 100 },
-        { name: "Pizza Loaded Fries Small", price: 250, cost: 0, sku: "SNK-FRIES-PLS", category: "Snacks", image: "", stock: 100 },
-        { name: "Pizza Loaded Fries Large", price: 450, cost: 0, sku: "SNK-FRIES-PLL", category: "Snacks", image: "", stock: 100 }
+        { name: "Crispy Wings 6Pcs", price: 350, cost: 0, sku: "ALC-CW-6", category: "ALA CART", image: "🍗", stock: 100 }
       ];
 
       try {
         // 1. Handle Categories
-        const { data: existingCats } = await supabase.from('categories').select('name');
-        const existingCatNames = new Set(existingCats?.map(c => c.name) || []);
         const categoryNames = [...new Set(items.map(i => i.category))];
-
         for (const catName of categoryNames) {
-          if (!existingCatNames.has(catName)) {
-            await supabase.from('categories').insert({ name: catName, icon: 'Utensils' });
+          const { data: existingCat } = await supabase
+            .from('categories')
+            .select('id')
+            .eq('name', catName)
+            .eq('restaurant_id', restaurantId)
+            .maybeSingle();
+
+          if (!existingCat) {
+            await api.categories.create({ name: catName, icon: 'Utensils' });
           }
         }
 
         // 2. Handle Products
-        const { data: existingProds } = await supabase.from('products').select('name');
-        const existingProdNames = new Set(existingProds?.map(p => p.name) || []);
-        const newItems = items.filter(item => !existingProdNames.has(item.name));
+        for (const item of items) {
+          const { data: existingProd } = await supabase
+            .from('products')
+            .select('id')
+            .eq('name', item.name)
+            .eq('restaurant_id', restaurantId)
+            .maybeSingle();
 
-        if (newItems.length > 0) {
-          const { error: prodError } = await supabase.from('products').insert(newItems as any);
-          if (prodError) throw prodError;
+          if (!existingProd) {
+            await api.products.create(item);
+          }
         }
 
         return true;
@@ -207,27 +218,52 @@ export const api = {
       }
     },
     getAll: async () => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) return [];
+
       const { data, error } = await supabase
         .from('products')
         .select('*')
+        .eq('restaurant_id', restaurantId)
         .order('name');
       if (error) throw error;
-      return data as any[];
+      return data || [];
     },
-    create: async (product: ProductInsert) => {
+    getWithDetails: async (productId: string) => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) throw new Error('Not authenticated');
+
       const { data, error } = await supabase
         .from('products')
-        .insert(product)
+        .select('*')
+        .eq('id', productId)
+        .eq('restaurant_id', restaurantId)
+        .single();
+      
+      if (error) throw error;
+      return { ...data, variants: [], addons: [] };
+    },
+    create: async (product: ProductInsert) => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('products')
+        .insert({ ...product, restaurant_id: restaurantId })
         .select()
         .single();
       if (error) throw error;
       return data;
     },
     update: async (id: string, product: ProductUpdate) => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) throw new Error('Not authenticated');
+
       const { data, error } = await supabase
         .from('products')
         .update(product)
         .eq('id', id)
+        .eq('restaurant_id', restaurantId)
         .select()
         .single();
       if (error) throw error;
@@ -256,113 +292,169 @@ export const api = {
         .getPublicUrl(filePath);
 
       return data.publicUrl;
-    },
-    getWithDetails: async () => {
-      // Missing tables fix: Only fetch products, ignore variants/addons
-      const { data, error } = await supabase
-        .from('products')
-        .select('*') // Removed '*, product_variants(*), product_addons(*)'
-        .order('name');
-
-      if (error) throw error;
-      return data;
     }
   },
   addons: {
     getAll: async () => {
-      // Missing table fix: Return empty array immediately
-      return [] as ProductAddon[];
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) return [];
+
+      const { data, error } = await supabase
+        .from('product_addons' as any)
+        .select('*')
+        .eq('restaurant_id', restaurantId)
+        .order('name');
+      
+      if (error && error.code !== 'PGRST116') throw error;
+      return (data || []) as ProductAddon[];
     },
     create: async (addon: Omit<ProductAddon, 'id' | 'created_at'>) => {
-      // Mock implementation or throw error
-      throw new Error("Addons table not implemented");
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('product_addons' as any)
+        .insert({ ...addon, restaurant_id: restaurantId })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data as ProductAddon;
     },
     delete: async (id: string) => {
-      throw new Error("Addons table not implemented");
+      const { error } = await supabase
+        .from('product_addons' as any)
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
     }
   },
   kitchens: {
     getAll: async () => {
-      // Missing table fix: Return empty array immediately
-      return [] as Kitchen[];
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) return [];
+
+      const { data, error } = await supabase
+        .from('kitchens' as any)
+        .select('*')
+        .eq('restaurant_id', restaurantId)
+        .order('name');
+      
+      if (error && error.code !== 'PGRST116') throw error;
+      return (data || []) as Kitchen[];
     },
     create: async (name: string) => {
-      throw new Error("Kitchens table not implemented");
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('kitchens' as any)
+        .insert({ name, restaurant_id: restaurantId })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data as Kitchen;
     }
   },
   customers: {
     getAll: async () => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) return [];
+
       const { data, error } = await supabase
         .from('customers')
         .select('*')
+        .eq('restaurant_id', restaurantId)
         .order('name');
       if (error) throw error;
       return data;
     },
     create: async (customer: CustomerInsert) => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) throw new Error('Not authenticated');
+
       const { data, error } = await supabase
         .from('customers')
-        .insert(customer)
+        .insert({
+          ...customer,
+          restaurant_id: restaurantId
+        })
         .select()
         .single();
       if (error) throw error;
       return data;
     },
-    update: async (id: number, customer: CustomerUpdate) => {
+    update: async (id: string, customer: CustomerUpdate) => {
       const { data, error } = await supabase
         .from('customers')
         .update(customer)
-        .eq('customer_id', id)
+        .eq('id', id)
         .select()
         .single();
       if (error) throw error;
       return data;
     },
-    delete: async (id: number) => {
+    delete: async (id: string) => {
       const { error } = await supabase
         .from('customers')
         .delete()
-        .eq('customer_id', id);
+        .eq('id', id);
       if (error) throw error;
     }
   },
   tables: {
     getAll: async () => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) return [];
+
       const { data, error } = await supabase
         .from('restaurant_tables')
         .select('*')
+        .eq('restaurant_id', restaurantId)
         .order('table_number');
       if (error) throw error;
       return data;
     },
-    updateStatus: async (id: number, status: 'available' | 'occupied' | 'reserved' | 'cleaning') => {
+    updateStatus: async (id: string, status: 'available' | 'occupied' | 'reserved' | 'cleaning') => {
       const { data, error } = await supabase
         .from('restaurant_tables')
         .update({ status })
-        .eq('table_id', id)
+        .eq('id', id)
         .select()
         .single();
       if (error) throw error;
       return data;
     },
     clearReserved: async () => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) return;
+
       const { error } = await supabase
         .from('restaurant_tables')
         .update({ status: 'available' })
-        .eq('status', 'reserved');
+        .eq('status', 'reserved')
+        .eq('restaurant_id', restaurantId);
       if (error) throw error;
     }
   },
   orders: {
     getAll: async () => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) return [];
+
       const { data, error } = await supabase
         .from('orders')
         .select('*, customers(name)')
+        .eq('restaurant_id', restaurantId)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
     },
     getByIdWithItems: async (id: string) => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) throw new Error('Not authenticated');
+
       const { data, error } = await supabase
         .from('orders')
         .select(`
@@ -375,18 +467,23 @@ export const api = {
           )
         `)
         .eq('id', id)
+        .eq('restaurant_id', restaurantId)
         .single();
 
       if (error) throw error;
       return data;
     },
     getDailyCount: async () => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) return 0;
+
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
 
       const { count, error } = await supabase
         .from('orders')
         .select('*', { count: 'exact', head: true })
+        .eq('restaurant_id', restaurantId)
         .gte('created_at', startOfDay.toISOString());
 
       if (error) {
@@ -397,135 +494,64 @@ export const api = {
       return count || 0;
     },
     create: async (order: any, items: OrderItemInsert[]) => {
-      // Clean order data to match actual Supabase schema
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) throw new Error('Not authenticated');
+
       const safeOrder: any = {
         total_amount: Number(order.total_amount) || 0,
-        status: order.status || 'completed',
+        status: order.status || 'pending',
         payment_method: order.payment_method || 'cash',
         order_type: order.order_type || 'dine_in',
+        restaurant_id: restaurantId,
+        customer_id: order.customer_id || null,
+        table_id: order.table_id || null
       };
 
-      if (order.server_name) {
-        safeOrder.server_name = order.server_name;
-      }
-
-      // Handle customer_id as number if it's an integer-like string or number
-      if (order.customer_id) {
-        const cid = parseInt(String(order.customer_id));
-        if (!isNaN(cid)) {
-          safeOrder.customer_id = cid;
-        }
-      }
-
-      // Handle table_id if present
-      if (order.table_id) {
-        const tid = parseInt(String(order.table_id));
-        if (!isNaN(tid)) {
-          safeOrder.table_id = tid;
-        }
-      }
-
-      // Validate safeOrder object before inserting
-      if (!safeOrder.total_amount || typeof safeOrder.total_amount !== 'number') {
-        throw new Error('Invalid or missing total_amount');
-      }
-      if (!safeOrder.payment_method || typeof safeOrder.payment_method !== 'string') {
-        throw new Error('Invalid or missing payment_method');
-      }
-
-      console.log("Validated safeOrder object for Supabase insertion:", safeOrder);
-
-      // Attempt to insert order into Supabase
       const { data: newOrder, error: orderError } = await supabase
         .from('orders')
         .insert(safeOrder)
         .select()
         .single();
 
-      if (orderError) {
-        console.error("Supabase Order Insert Error:", {
-          message: orderError.message,
-          details: orderError.details,
-          hint: orderError.hint,
-          code: orderError.code,
-          payload: safeOrder
-        });
-        throw orderError;
-      }
+      if (orderError) throw orderError;
       if (!newOrder) throw new Error('Failed to create order');
 
-      const itemsWithOrderIdFull = items.map(item => {
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        const digitsOnly = /^\d+$/;
-        const candidate = (item as any).product_id;
-        const dbItem: any = {
-          order_id: newOrder.id,
-          quantity: item.quantity,
-          price: item.price,
-          product_name: (item as any).product_name,
-          product_category: (item as any).product_category
-        };
-        if (candidate != null) {
-          if (typeof candidate === 'string' && uuidRegex.test(candidate)) {
-            dbItem.product_id = candidate;
-          } else if ((typeof candidate === 'string' && digitsOnly.test(candidate)) || typeof candidate === 'number') {
-            const n = typeof candidate === 'number' ? candidate : parseInt(candidate, 10);
-            if (!Number.isNaN(n)) dbItem.product_id = n as any;
-          }
-        }
-        return dbItem;
-      });
+      const itemsToInsert = items.map(item => ({
+        order_id: newOrder.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.price,
+        restaurant_id: restaurantId
+      }));
 
-      // Try inserting with product_name/category; if columns don't exist, fallback to minimal shape
-      const { error: firstTryError } = await supabase
+      const { error: itemsError } = await supabase
         .from('order_items')
-        .insert(itemsWithOrderIdFull);
+        .insert(itemsToInsert);
 
-      if (firstTryError) {
-        console.warn("Enhanced tracking columns (product_name/category) missing in DB. Falling back to basic storage.");
-        // Fallback without product_name/category
-        const itemsWithOrderId = itemsWithOrderIdFull.map(({ product_name, product_category, ...rest }) => rest);
-        const { error: fallbackError } = await supabase
-          .from('order_items')
-          .insert(itemsWithOrderId);
-        if (fallbackError) {
-          throw fallbackError;
-        }
-      }
+      if (itemsError) throw itemsError;
       return newOrder;
     },
     update: async (orderId: string, order: any, items: OrderItemInsert[]) => {
-      // Clean order data to match actual Supabase schema
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) throw new Error('Not authenticated');
+
       const safeOrder: any = {
         total_amount: Number(order.total_amount) || 0,
         status: order.status || 'pending',
         payment_method: order.payment_method || 'cash',
         order_type: order.order_type || 'dine_in',
+        customer_id: order.customer_id || null,
+        table_id: order.table_id || null
       };
 
-      if (order.server_name) {
-        safeOrder.server_name = order.server_name;
-      }
-
-      if (order.customer_id) {
-        const cid = parseInt(String(order.customer_id));
-        if (!isNaN(cid)) safeOrder.customer_id = cid;
-      }
-
-      if (order.table_id) {
-        const tid = parseInt(String(order.table_id));
-        if (!isNaN(tid)) safeOrder.table_id = tid;
-      }
-
-      // 1. Update order
       const { error: orderError } = await supabase
         .from('orders')
         .update(safeOrder)
-        .eq('id', orderId);
+        .eq('id', orderId)
+        .eq('restaurant_id', restaurantId);
 
       if (orderError) throw orderError;
 
-      // 2. Delete existing items
       const { error: deleteError } = await supabase
         .from('order_items')
         .delete()
@@ -533,38 +559,25 @@ export const api = {
 
       if (deleteError) throw deleteError;
 
-      // 3. Insert new items
-      const itemsWithOrderIdFull = items.map(item => {
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        const digitsOnly = /^\d+$/;
-        const candidate = (item as any).product_id;
-        const dbItem: any = {
-          order_id: orderId,
-          quantity: item.quantity,
-          price: item.price,
-          product_name: (item as any).product_name,
-          product_category: (item as any).product_category
-        };
-        if (candidate != null) {
-          if (typeof candidate === 'string' && uuidRegex.test(candidate)) {
-            dbItem.product_id = candidate;
-          } else if ((typeof candidate === 'string' && digitsOnly.test(candidate)) || typeof candidate === 'number') {
-            const n = typeof candidate === 'number' ? candidate : parseInt(candidate, 10);
-            if (!Number.isNaN(n)) dbItem.product_id = n as any;
-          }
-        }
-        return dbItem;
-      });
+      const itemsToInsert = items.map(item => ({
+        order_id: orderId,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.price,
+        restaurant_id: restaurantId
+      }));
 
-      // Insert new items with strict snapshotting
       const { error: itemsError } = await supabase
         .from('order_items')
-        .insert(itemsWithOrderIdFull);
+        .insert(itemsToInsert);
 
       if (itemsError) throw itemsError;
       return true;
     },
     getOngoing: async () => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) return [];
+
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
 
@@ -579,6 +592,8 @@ export const api = {
             products(name, image)
           )
         `)
+        .eq('restaurant_id', restaurantId)
+        .neq('status', 'completed')
         .gte('created_at', startOfDay.toISOString())
         .order('created_at', { ascending: false });
 
@@ -597,7 +612,6 @@ export const api = {
       return data;
     },
     delete: async (id: string) => {
-      // 1. Delete associated order items first
       const { error: itemsError } = await supabase
         .from('order_items')
         .delete()
@@ -605,7 +619,6 @@ export const api = {
 
       if (itemsError) throw itemsError;
 
-      // 2. Delete the order
       const { error: orderError } = await supabase
         .from('orders')
         .delete()
@@ -615,123 +628,90 @@ export const api = {
       return true;
     },
     clearAllToday: async () => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) return;
+
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
 
-      const { data: orders, error: fetchError } = await supabase
+      const { data: orders } = await supabase
         .from('orders')
         .select('id')
+        .eq('restaurant_id', restaurantId)
         .gte('created_at', startOfDay.toISOString());
 
-      if (fetchError) throw fetchError;
       if (!orders || orders.length === 0) return;
 
       const orderIds = orders.map(o => o.id);
 
-      // Delete order items first
-      const { error: itemsError } = await supabase
+      await supabase
         .from('order_items')
         .delete()
         .in('order_id', orderIds);
 
-      if (itemsError) throw itemsError;
-
-      // Delete orders
-      const { error: ordersError } = await supabase
+      await supabase
         .from('orders')
         .delete()
         .in('id', orderIds);
-
-      if (ordersError) throw ordersError;
-    },
-    deleteTodayOrders: async () => {
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
-
-      // 1. Get IDs of orders to delete
-      const { data: orders, error: fetchError } = await supabase
-        .from('orders')
-        .select('id')
-        .gte('created_at', startOfDay.toISOString());
-
-      if (fetchError) throw fetchError;
-
-      if (!orders || orders.length === 0) return;
-
-      const orderIds = orders.map(o => (o as any).id);
-
-      // 2. Delete associated order items first (Manual Cascade)
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .delete()
-        .in('order_id', orderIds);
-
-      if (itemsError) throw itemsError;
-
-      // 3. Delete the orders
-      const { error: ordersError } = await supabase
-        .from('orders')
-        .delete()
-        .in('id', orderIds);
-
-      if (ordersError) throw ordersError;
-    },
-    deleteAllOrders: async () => {
-      // 1. Delete ALL order items first (Manual Cascade)
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000');
-
-      if (itemsError) throw itemsError;
-
-      // 2. Delete ALL orders
-      const { error: ordersError } = await supabase
-        .from('orders')
-        .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000');
-
-      if (ordersError) throw ordersError;
     }
   },
   reports: {
     getDashboardStats: async () => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) throw new Error('Not authenticated');
+
       const { data: orders, error: ordersError } = await supabase
         .from('orders')
         .select('*, order_items(*, products(*))')
+        .eq('restaurant_id', restaurantId)
         .order('created_at', { ascending: false });
 
       if (ordersError) throw ordersError;
 
       const { data: customers, error: customersError } = await supabase
         .from('customers')
-        .select('*');
+        .select('*')
+        .eq('restaurant_id', restaurantId);
 
       if (customersError) throw customersError;
 
+      const totalRevenue = (orders as any[]).reduce((sum, order) => sum + (order.total_amount || 0), 0);
+      const totalOrders = orders?.length || 0;
+      const totalCustomers = customers?.length || 0;
+      
       return {
-        orders: orders || [],
-        customers: customers || []
+        revenue: totalRevenue,
+        orders: totalOrders,
+        customers: totalCustomers,
+        avgOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0,
+        recentOrders: (orders as any[]).slice(0, 5)
       };
+    },
+    getSalesReport: async (startDate: Date, endDate: Date) => {
+      const restaurantId = await getRestaurantId();
+      if (!restaurantId) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*, order_items(*, products(*))')
+        .eq('restaurant_id', restaurantId)
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      return data;
     }
   },
   profiles: {
-    getAll: async () => {
+    get: async (id: string) => {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .order('full_name');
+        .eq('id', id)
+        .single();
       if (error) throw error;
-      return data as Profile[];
-    },
-    getByRestaurant: async (restaurantId: string) => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('restaurant_id', restaurantId)
-        .order('full_name');
-      if (error) throw error;
-      return data as Profile[];
+      return data;
     },
     update: async (id: string, profile: ProfileUpdate) => {
       const { data, error } = await supabase
@@ -741,7 +721,7 @@ export const api = {
         .select()
         .single();
       if (error) throw error;
-      return data as Profile;
+      return data;
     },
     delete: async (id: string) => {
       const { error } = await supabase
@@ -749,11 +729,6 @@ export const api = {
         .delete()
         .eq('id', id);
       if (error) throw error;
-    },
-    changePassword: async (newPassword: string) => {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-      if (error) throw error;
-      return true;
     }
   }
 };

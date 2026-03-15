@@ -59,7 +59,6 @@ export const LicenseGate = ({ children }: { children?: React.ReactNode }) => {
     setChecking(false);
   };
 
-  /*
   if (isLoading || checking) {
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-slate-900 text-white gap-4">
@@ -68,12 +67,11 @@ export const LicenseGate = ({ children }: { children?: React.ReactNode }) => {
       </div>
     );
   }
-  */
 
-  // REMOVED ALL LICENSE GATE RESTRICTIONS - ALWAYS ALLOW ACCESS
-  return <>{children || <Outlet />}</>;
+  if (isValid) {
+    return <>{children || <Outlet />}</>;
+  }
 
-  /*
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 font-sans">
       <Card className="w-full max-w-md border-none shadow-2xl bg-slate-900 text-white rounded-3xl overflow-hidden">
@@ -89,7 +87,7 @@ export const LicenseGate = ({ children }: { children?: React.ReactNode }) => {
         <CardContent className="p-8 space-y-6">
           <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-2xl flex items-center gap-3 text-sm font-bold">
             <AlertCircle className="w-5 h-5 shrink-0" />
-            Subscription for "{restaurant?.name}" is no longer active.
+            {restaurant ? `Subscription for "${restaurant.name}" is no longer active.` : 'No active restaurant assigned.'}
           </div>
           
           <div className="space-y-4">
@@ -111,12 +109,22 @@ export const LicenseGate = ({ children }: { children?: React.ReactNode }) => {
             Check Status Again
           </Button>
 
+          <Button 
+            variant="ghost" 
+            className="w-full h-12 rounded-xl text-slate-400 hover:text-white font-black font-heading uppercase tracking-widest mt-2"
+            onClick={async () => {
+              await import('@/integrations/supabase/client').then(m => m.supabase.auth.signOut());
+              window.location.href = '/login';
+            }}
+          >
+            Sign Out
+          </Button>
+
           <div className="text-center text-[10px] font-black font-heading uppercase tracking-widest text-slate-600 mt-4">
-            Powered By GENAI TECHNOLOGY
+            Powered By GENAI TECHNOLOGY Nawabshah
           </div>
         </CardContent>
       </Card>
     </div>
   );
-  */
 };

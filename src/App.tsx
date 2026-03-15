@@ -39,7 +39,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
-            <Route path="/license-manager" element={<LicenseGenerator />} />
+            <Route path="/license-manager" element={
+              <ProtectedRoute adminOnly>
+                <LicenseGenerator />
+              </ProtectedRoute>
+            } />
             <Route path="/super-admin" element={
               <ProtectedRoute adminOnly>
                 <SuperAdminDashboard />

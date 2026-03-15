@@ -171,7 +171,8 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
           <span className="text-[8px] text-center">QR Code<br />Digital Receipt</span>
         </div>
 
-        <p className="mt-4 font-bold">Genai Nawabshah contact 923342826675</p>
+        <p className="mt-4 font-bold">Powered by GENAI TECHNOLOGY Nawabshah</p>
+        <p className="font-bold">Contact: +92 334 2826675</p>
       </div>
 
       {/* End marker */}

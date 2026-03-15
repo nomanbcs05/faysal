@@ -205,7 +205,6 @@ const CartPanel = () => {
             payment_method: paymentMethod,
             order_type: orderType,
             table_id: tableId || null,
-            server_name: getServerNameWithRole(),
           };
 
           const orderItemsInsert = items.map(item => ({
@@ -345,7 +344,6 @@ const CartPanel = () => {
       payment_method: 'cash', // Default payment method
       order_type: orderType,
       table_id: tableId || null,
-      server_name: getServerNameWithRole(),
     };
 
     const orderItemsInsert = items.map(item => ({
@@ -385,7 +383,6 @@ const CartPanel = () => {
       payment_method: paymentMethod,
       order_type: orderType,
       table_id: tableId || null,
-      server_name: getServerNameWithRole(),
     };
 
     const orderItemsInsert = items.map(item => ({
@@ -649,8 +646,8 @@ const CartPanel = () => {
         <div className="flex flex-col gap-2">
           <div className="flex gap-2">
             <Button variant="outline" className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11 border-2 border-emerald-500/20 hover:bg-emerald-50 hover:text-emerald-600 transition-all" onClick={handleDone} disabled={items.length === 0}>
-              <CheckCircle2 className="h-4 w-4 mr-2" />
-              Done
+              <ChefHat className="h-4 w-4 mr-2" />
+              Send to Kitchen
             </Button>
             <Button variant="outline" className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11" onClick={handleShowBill} disabled={items.length === 0}>
               <FileText className="h-4 w-4 mr-2" />

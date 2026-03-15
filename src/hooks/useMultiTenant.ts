@@ -62,7 +62,7 @@ export const useMultiTenant = () => {
       if (!session?.user?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, restaurant_id, full_name, role')
         .eq('id', session.user.id)
         .single();
 

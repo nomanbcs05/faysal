@@ -87,8 +87,22 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
           isCollapsed ? "items-center" : ""
         )}>
           <div className="flex items-center gap-3 min-w-max">
-            <div className="w-10 h-10 rounded-2xl bg-sidebar-primary flex items-center justify-center shadow-lg shadow-sidebar-primary/20 shrink-0">
-              <Building2 className="h-6 w-6 text-sidebar-primary-foreground" />
+            <div className="w-10 h-10 rounded-2xl bg-sidebar-primary flex items-center justify-center shadow-lg shadow-sidebar-primary/20 shrink-0 overflow-hidden">
+              <img 
+                src={restaurant?.logo_url || "/logo.jpeg"} 
+                alt="Logo" 
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    const icon = document.createElement('div');
+                    icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-sidebar-primary-foreground"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/></svg>';
+                    parent.appendChild(icon.firstChild!);
+                  }
+                }}
+              />
             </div>
             {!isCollapsed && (
               <div className="flex-1 min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
@@ -96,7 +110,7 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
                   {restaurant?.name || "Gen XCloud"}
                 </h1>
                 <p className="text-[10px] font-bold text-sidebar-foreground/50 uppercase tracking-widest mt-1">
-                  {isSuperAdmin ? "Super Admin" : "POS System"}
+                  {isSuperAdmin ? "Gen XCloud Admin" : "POS System"}
                 </p>
               </div>
             )}

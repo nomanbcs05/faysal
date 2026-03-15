@@ -402,7 +402,15 @@ const SuperAdminDashboard = () => {
       <div className="space-y-6 max-w-[1600px] mx-auto">
 
         {/* ── New Restaurant Button ─────────────────────────────────── */}
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-3">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/license-manager')}
+            className="rounded-xl border-slate-700 bg-slate-800/30 text-slate-300 hover:bg-slate-700 font-black font-heading uppercase tracking-widest text-xs h-10 px-5 shadow-lg"
+          >
+            <ShieldCheck className="h-4 w-4 mr-2 text-blue-400" />
+            License Manager
+          </Button>
           <Button
             onClick={() => setShowCreateForm(!showCreateForm)}
             className="rounded-xl bg-blue-600 hover:bg-blue-700 font-black font-heading uppercase tracking-widest text-xs h-10 px-5 shadow-lg shadow-blue-500/20"
