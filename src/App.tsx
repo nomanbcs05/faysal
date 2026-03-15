@@ -68,7 +68,7 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/manage-products" element={
-              <ProtectedRoute>
+              <ProtectedRoute adminOnly>
                 <ManageProductsPage />
               </ProtectedRoute>
             } />
@@ -83,12 +83,12 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/reports" element={
-              <ProtectedRoute>
+              <ProtectedRoute adminOnly>
                 <ReportsPage />
               </ProtectedRoute>
             } />
             <Route path="/settings" element={
-              <ProtectedRoute>
+              <ProtectedRoute adminOnly>
                 <SettingsPage />
               </ProtectedRoute>
             } />

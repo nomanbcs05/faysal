@@ -26,10 +26,15 @@ import StartDayModal from '@/components/pos/StartDayModal';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 
+interface AppSidebarProps {
+  isCollapsed: boolean;
+  onToggle: () => void;
+}
+
 const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile, restaurant, isSuperAdmin } = useMultiTenant();
+  const { profile, restaurant, isSuperAdmin, isAdmin } = useMultiTenant();
   const [showStartSessionModal, setShowStartSessionModal] = useState(false);
   const queryClient = useQueryClient();
 
@@ -37,19 +42,39 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
     { name: 'Dashboard', href: '/', icon: LayoutGrid },
     { name: 'Running Orders', href: '/ongoing-orders', icon: Clock },
     { name: 'Orders', href: '/orders', icon: ClipboardList },
-    { name: 'Manage Products', href: '/manage-products', icon: Settings2 },
+    { 
+      name: 'Manage Products', 
+      href: '/manage-products', 
+      icon: Settings2,
+      adminOnly: true 
+    },
     { name: 'Products', href: '/products', icon: Package },
     { name: 'Customers', href: '/customers', icon: Users },
-    { name: 'Reports', href: '/reports', icon: BarChart3 },
-    { name: 'Settings', href: '/settings', icon: Settings },
+    { 
+      name: 'Reports', 
+      href: '/reports', 
+      icon: BarChart3,
+      adminOnly: true 
+    },
+    { 
+      name: 'Settings', 
+      href: '/settings', 
+      icon: Settings,
+      adminOnly: true 
+    },
   ];
+
+  const filteredNavigation = baseNavigation.filter(item => {
+    if (item.adminOnly && !isAdmin) return false;
+    return true;
+  });
 
   const navigation = isSuperAdmin
     ? [
         { name: 'Super Admin', href: '/super-admin', icon: ShieldCheck },
-        ...baseNavigation,
+        ...filteredNavigation,
       ]
-    : baseNavigation;
+    : filteredNavigation;
 
   const handleLogout = async () => {
     try {
