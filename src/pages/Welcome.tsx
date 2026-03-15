@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { User, Shield, Users } from "lucide-react";
@@ -6,6 +7,18 @@ type Role = "admin" | "cashier" | "cashier2";
 
 const Welcome = () => {
   const navigate = useNavigate();
+
+  const [cashier1Label, setCashier1Label] = useState(localStorage.getItem('role_label_cashier') || 'Admin');
+  const [cashier2Label, setCashier2Label] = useState(localStorage.getItem('role_label_cashier2') || 'Cashier 2');
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setCashier1Label(localStorage.getItem('role_label_cashier') || 'Admin');
+      setCashier2Label(localStorage.getItem('role_label_cashier2') || 'Cashier 2');
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const handleRoleSelect = (role: Role) => {
     navigate("/login", { state: { role } });
@@ -42,7 +55,7 @@ const Welcome = () => {
       <div className="relative z-10 w-full max-w-3xl grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
         {/* Cashier Card */}
         <RoleCard
-          title="Anas"
+          title={cashier1Label}
           icon={User}
           description="Process orders and manage payments"
           onSelect={() => handleRoleSelect("cashier")}
@@ -50,7 +63,7 @@ const Welcome = () => {
 
         {/* Cashier 2 Card */}
         <RoleCard
-          title="Cashier 2"
+          title={cashier2Label}
           icon={Users}
           description="Secondary station for peak hours"
           onSelect={() => handleRoleSelect("cashier2")}

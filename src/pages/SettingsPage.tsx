@@ -32,6 +32,8 @@ const SettingsPage = () => {
   const [receiptFooter, setReceiptFooter] = useState(restaurant?.receipt_footer || 'Thank you for your visit! Come back soon!');
   const [billFooter, setBillFooter] = useState(restaurant?.bill_footer || '!!!!FOR THE LOVE OF FOOD !!!!');
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [cashier1Label, setCashier1Label] = useState(localStorage.getItem('role_label_cashier') || 'Admin');
+  const [cashier2Label, setCashier2Label] = useState(localStorage.getItem('role_label_cashier2') || 'Cashier 2');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -159,6 +161,7 @@ const SettingsPage = () => {
               <TabsTrigger value="notifications">Notifications</TabsTrigger>
               {isAdmin && <TabsTrigger value="staff">Staff</TabsTrigger>}
               <TabsTrigger value="security">Security</TabsTrigger>
+              <TabsTrigger value="roles">Roles</TabsTrigger>
             </TabsList>
 
             <TabsContent value="business">
@@ -585,6 +588,50 @@ const SettingsPage = () => {
                       className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       {changePasswordMutation.isPending ? 'Updating...' : 'Update Password'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="roles">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Role Selection Labels
+                  </CardTitle>
+                  <CardDescription>
+                    Customize the names shown on the Welcome screen
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="cashier1Label">Cashier 1 Label (e.g. "Admin")</Label>
+                    <Input 
+                      id="cashier1Label" 
+                      value={cashier1Label}
+                      onChange={(e) => setCashier1Label(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cashier2Label">Cashier 2 Label (e.g. "Cashier 2")</Label>
+                    <Input 
+                      id="cashier2Label" 
+                      value={cashier2Label}
+                      onChange={(e) => setCashier2Label(e.target.value)}
+                    />
+                  </div>
+                  <div className="pt-4">
+                    <Button 
+                      onClick={() => {
+                        localStorage.setItem('role_label_cashier', cashier1Label);
+                        localStorage.setItem('role_label_cashier2', cashier2Label);
+                        toast.success('Role labels updated successfully');
+                      }}
+                      className="bg-primary hover:bg-primary/90 text-white"
+                    >
+                      Save Role Labels
                     </Button>
                   </div>
                 </CardContent>
