@@ -116,20 +116,23 @@ const TableSelectionModal = ({ isOpen, onClose }: TableSelectionModalProps) => {
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent 
         className="max-w-[700px] w-[95vw] max-h-[95vh] p-0 overflow-hidden bg-background rounded-2xl shadow-2xl border-none"
-        aria-describedby="table-selection-description"
       >
+        <DialogHeader className="sr-only">
+          <DialogTitle>Table Selection</DialogTitle>
+          <DialogDescription>Choose a table for the order.</DialogDescription>
+        </DialogHeader>
         <div className="flex flex-col h-full max-h-[95vh]">
           {/* Header Section */}
           <div className="p-6 pb-4 border-b bg-slate-50/50">
             <div className="flex justify-between items-start">
-              <DialogHeader className="space-y-1">
-                <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight text-slate-900">
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black font-heading uppercase tracking-tight text-slate-900">
                   Dine-In Selection
-                </DialogTitle>
-                <DialogDescription id="table-selection-description" className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
+                </h2>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
                   Assign server & table (Optional)
-                </DialogDescription>
-              </DialogHeader>
+                </p>
+              </div>
               <div className="flex items-center gap-3">
                 <Button 
                   variant="outline" 

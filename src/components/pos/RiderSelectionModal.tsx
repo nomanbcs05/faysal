@@ -39,12 +39,12 @@ const RiderSelectionModal = ({ isOpen, onClose }: RiderSelectionModalProps) => {
         onClose();
       }
     }}>
-      <DialogContent className="sm:max-w-[500px] p-6 bg-background" aria-describedby="rider-selection-description">
+      <DialogContent className="sm:max-w-[500px] p-6 bg-background">
         <DialogHeader className="pb-4">
           <DialogTitle className="text-2xl font-bold text-center">
             Select Rider
           </DialogTitle>
-          <DialogDescription id="rider-selection-description" className="text-center">
+          <DialogDescription className="text-center">
             Choose a rider to assign this delivery order.
           </DialogDescription>
         </DialogHeader>

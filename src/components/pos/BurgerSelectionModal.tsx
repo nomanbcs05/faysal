@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/services/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -33,14 +35,23 @@ export default function BurgerSelectionModal({ isOpen, onClose, onAdd }: BurgerS
   const [searchQuery, setSearchQuery] = useState('');
   const [quantityPrefix, setQuantityPrefix] = useState<string>('');
 
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: api.products.getAll,
+  });
+
   const filteredBurgers = BURGER_DATA.filter(b => 
     b.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleAddBurger = (burger: BurgerItem) => {
     const qty = parseInt(quantityPrefix) || 1;
+    
+    // Find matching product from database
+    const dbProduct = allProducts.find(p => p.name === burger.name);
+    
     const burgerProduct = {
-      id: `burger-${burger.name.toLowerCase().replace(/\s+/g, '-')}`,
+      id: dbProduct?.id || `burger-${burger.name.toLowerCase().replace(/\s+/g, '-')}`,
       name: burger.name,
       price: burger.price,
       category: 'Burgers',
@@ -69,19 +80,23 @@ export default function BurgerSelectionModal({ isOpen, onClose, onAdd }: BurgerS
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden" aria-describedby="burger-selection-description">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Burger Selection</DialogTitle>
+          <DialogDescription>Select burgers to add to your order.</DialogDescription>
+        </DialogHeader>
         {/* Header */}
-        <div className="bg-red-600 bg-gradient-to-br from-red-600 to-rose-700 px-6 py-5 text-white shrink-0 relative">
+        <div className="bg-orange-500 px-6 py-5 text-white shrink-0 relative">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white/10 rounded-lg">
                 <ChefHat className="h-7 w-7" />
               </div>
               <div>
-                <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">Burgers Menu</DialogTitle>
-                <DialogDescription id="burger-selection-description" className="text-red-50/80 text-[10px] font-bold uppercase tracking-widest mt-0.5">
-                  Premium & Juicy Burgers
-                </DialogDescription>
+                <h2 className="text-2xl font-black font-heading uppercase tracking-tight">Burger Selection</h2>
+                <p className="text-orange-100/80 text-xs font-bold uppercase tracking-widest mt-0.5">
+                  Freshly cooked delicious burgers
+                </p>
               </div>
             </div>
             <button 

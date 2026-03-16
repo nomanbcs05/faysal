@@ -60,11 +60,11 @@ const ManageProductsPage = () => {
   const queryClient = useQueryClient();
 
   const seedMutation = useMutation({
-    mutationFn: api.products.seedArabicBroast,
+    mutationFn: api.products.seedMenu,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products-with-details'] });
       queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast({ title: "Success", description: "Arabic Broast items added successfully" });
+      toast({ title: "Success", description: "Menu items added successfully" });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -386,6 +386,12 @@ const ManageProductsPage = () => {
         {/* Add/Edit Product Modal */}
         <Dialog open={isProductModalOpen} onOpenChange={setIsProductModalOpen}>
           <DialogContent className="max-w-[1000px] p-0 overflow-hidden bg-transparent border-none">
+            <DialogHeader className="sr-only">
+              <DialogTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</DialogTitle>
+              <DialogDescription>
+                {editingProduct ? 'Update details for the selected product.' : 'Enter details to add a new product to your menu.'}
+              </DialogDescription>
+            </DialogHeader>
             <div className="flex gap-6 max-h-[90vh]">
               {/* Left Panel: Basic Info */}
               <div className="flex-1 bg-white rounded-3xl p-8 overflow-y-auto">

@@ -173,9 +173,48 @@ export const api = {
         { name: "Skin Spicy injected Broast Chest/Wing 2Pcs", price: 600, cost: 0, sku: "SIB-CW-2", category: "Arabic Broast", image: "🍗", stock: 100 },
         { name: "Skin Spicy injected Half Broast 4Pcs", price: 1100, cost: 0, sku: "SIB-HALF-4", category: "Arabic Broast", image: "🍗", stock: 100 },
         { name: "Skin Spicy injected Full Broast 8Pcs", price: 2200, cost: 0, sku: "SIB-FULL-8", category: "Arabic Broast", image: "🍗", stock: 100 },
+        
+        // Pizzas - Classic
+        { name: "Chicken Fajita (Small)", price: 450, cost: 0, sku: "PIZZA-FAJ-S", category: "Pizzas", image: "🍕", stock: 100 },
+        { name: "Chicken Fajita (Medium)", price: 800, cost: 0, sku: "PIZZA-FAJ-M", category: "Pizzas", image: "🍕", stock: 100 },
+        { name: "Chicken Fajita (Large)", price: 1050, cost: 0, sku: "PIZZA-FAJ-L", category: "Pizzas", image: "🍕", stock: 100 },
+        { name: "Chicken Fajita (Jumbo)", price: 1250, cost: 0, sku: "PIZZA-FAJ-J", category: "Pizzas", image: "🍕", stock: 100 },
+        { name: "Chicken Tikka (Small)", price: 450, cost: 0, sku: "PIZZA-TIK-S", category: "Pizzas", image: "🍕", stock: 100 },
+        { name: "Chicken Tikka (Medium)", price: 800, cost: 0, sku: "PIZZA-TIK-M", category: "Pizzas", image: "🍕", stock: 100 },
+        { name: "Chicken Tikka (Large)", price: 1050, cost: 0, sku: "PIZZA-TIK-L", category: "Pizzas", image: "🍕", stock: 100 },
+        { name: "Chicken Tikka (Jumbo)", price: 1250, cost: 0, sku: "PIZZA-TIK-J", category: "Pizzas", image: "🍕", stock: 100 },
+        { name: "Bonefire Pizza (Small)", price: 450, cost: 0, sku: "PIZZA-BON-S", category: "Pizzas", image: "🍕", stock: 100 },
+        { name: "Bonefire Pizza (Medium)", price: 800, cost: 0, sku: "PIZZA-BON-M", category: "Pizzas", image: "🍕", stock: 100 },
+        { name: "Bonefire Pizza (Large)", price: 1050, cost: 0, sku: "PIZZA-BON-L", category: "Pizzas", image: "🍕", stock: 100 },
+        { name: "Bonefire Pizza (Jumbo)", price: 1250, cost: 0, sku: "PIZZA-BON-J", category: "Pizzas", image: "🍕", stock: 100 },
+        
+        // Burgers
+        { name: "Premium Spicy Zinger Burger", price: 450, cost: 0, sku: "BGR-PSZ", category: "Burgers", image: "🍔", stock: 100 },
+        { name: "Zinger Burger", price: 380, cost: 0, sku: "BGR-ZIN", category: "Burgers", image: "🍔", stock: 100 },
+        { name: "Mighty Zinger Burger with Cheese", price: 700, cost: 0, sku: "BGR-MIG", category: "Burgers", image: "🍔", stock: 100 },
+        
+        // Bar BQ
+        { name: "All Flavours Leg Tikka", price: 350, cost: 0, sku: "BBQ-LEG", category: "BAR BQ", image: "🔥", stock: 100 },
+        { name: "Green Chicken Tikka Chest", price: 450, cost: 0, sku: "BBQ-GRN", category: "BAR BQ", image: "🔥", stock: 100 },
+        { name: "Reshmi Kabab Chicken 1 Plate / 6 Pcs", price: 400, cost: 0, sku: "BBQ-RES", category: "BAR BQ", image: "🔥", stock: 100 },
+        
+        // Rolls
+        { name: "Max Roll", price: 300, cost: 0, sku: "ROLL-MAX", category: "Rolls", image: "🌯", stock: 100 },
+        { name: "Special Zinger Roll", price: 250, cost: 0, sku: "ROLL-ZIN", category: "Rolls", image: "🌯", stock: 100 },
+        
+        // Broast
+        { name: "Qtr Leg Broast", price: 400, cost: 0, sku: "BRO-QLG", category: "Broast", image: "🍗", stock: 100 },
+        { name: "Half Broast", price: 830, cost: 0, sku: "BRO-HLF", category: "Broast", image: "🍗", stock: 100 },
+        
         // Beverages
         { name: "Next Cola / Fizz Up 345 ml", price: 80, cost: 0, sku: "DRINK-345", category: "Beverages", image: "🥤", stock: 100 },
         { name: "Mineral Water Small", price: 50, cost: 0, sku: "WATER-S", category: "Beverages", image: "💧", stock: 100 },
+        
+        // Sauces & Toppings
+        { name: "Special Sauce", price: 100, cost: 0, sku: "SAU-SPEC", category: "Sauces", image: "🥣", stock: 100 },
+        { name: "Garlic Mayo Sauce", price: 50, cost: 0, sku: "SAU-GAR", category: "Sauces", image: "🥣", stock: 100 },
+        { name: "Cheese Slice", price: 50, cost: 0, sku: "TOP-CHE", category: "Toppings", image: "🧀", stock: 100 },
+        
         // ALA CART
         { name: "Club Sandwich", price: 400, cost: 0, sku: "ALC-CLUB-S", category: "ALA CART", image: "🥪", stock: 100 },
         { name: "Crispy Wings 6Pcs", price: 350, cost: 0, sku: "ALC-CW-6", category: "ALA CART", image: "🍗", stock: 100 }

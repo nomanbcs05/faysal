@@ -60,7 +60,12 @@ const ProductGrid = () => {
   // Automatically seed Arabic Broast items if none exist
   const queryClient = useQueryClient();
   const { mutate: seedMenu } = useMutation({
-    mutationFn: api.products.seedArabicBroast,
+    mutationFn: async () => {
+      if (!api.products?.seedMenu) {
+        throw new Error('api.products.seedMenu is not defined');
+      }
+      return api.products.seedMenu();
+    },
     onMutate: () => {
       toast.loading('Seeding menu items...', { id: 'seed-toast' });
     },

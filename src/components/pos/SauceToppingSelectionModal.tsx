@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/services/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,6 +43,11 @@ export default function SauceToppingSelectionModal({ isOpen, onClose, onAdd }: S
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'sauces' | 'toppings'>('sauces');
 
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: api.products.getAll,
+  });
+
   const filteredSauces = SAUCES.filter(s => 
     s.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -50,8 +57,11 @@ export default function SauceToppingSelectionModal({ isOpen, onClose, onAdd }: S
   );
 
   const handleAddItem = (item: Item) => {
+    // Find matching product from database
+    const dbProduct = allProducts.find(p => p.name === item.name);
+    
     const product = {
-      id: `${item.type}-${item.name.toLowerCase().replace(/\s+/g, '-')}`,
+      id: dbProduct?.id || `${item.type}-${item.name.toLowerCase().replace(/\s+/g, '-')}`,
       name: item.name,
       price: item.price,
       category: item.type === 'sauce' ? 'Sauces' : 'Toppings',
@@ -64,18 +74,22 @@ export default function SauceToppingSelectionModal({ isOpen, onClose, onAdd }: S
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Sauces & Toppings Selection</DialogTitle>
+          <DialogDescription>Select extra sauces and toppings to add to your order.</DialogDescription>
+        </DialogHeader>
         {/* Header */}
-        <div className="bg-yellow-500 bg-gradient-to-br from-yellow-500 to-amber-600 px-6 py-5 text-white shrink-0 relative">
+        <div className="bg-indigo-600 px-6 py-5 text-white shrink-0 relative">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white/10 rounded-lg">
                 <Droplets className="h-7 w-7 text-white" />
               </div>
               <div>
-                <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">Sauces & Toppings</DialogTitle>
-                <DialogDescription className="text-yellow-100 text-[10px] font-bold uppercase tracking-widest mt-0.5">
+                <h2 className="text-xl font-black font-heading uppercase tracking-tight">Sauces & Toppings</h2>
+                <p className="text-slate-100 text-[10px] font-bold uppercase tracking-widest mt-1">
                   Extra Flavours & Add-ons
-                </DialogDescription>
+                </p>
               </div>
             </div>
             <button 

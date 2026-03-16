@@ -147,7 +147,11 @@ const CustomerSelectionModal = ({ isOpen, onClose, onSaved }: CustomerSelectionM
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent hideCloseButton className="max-w-md p-0 overflow-hidden bg-white border-none rounded-3xl shadow-2xl">
-        <DialogHeader className="relative bg-slate-900 px-6 py-6 text-white">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Customer Details</DialogTitle>
+          <DialogDescription>Enter name and phone for loyalty tracking.</DialogDescription>
+        </DialogHeader>
+        <div className="relative bg-slate-900 px-6 py-6 text-white shrink-0">
           <DialogClose asChild>
             <button
               aria-label="Close"
@@ -166,13 +170,13 @@ const CustomerSelectionModal = ({ isOpen, onClose, onSaved }: CustomerSelectionM
               <User className="h-6 w-6 text-blue-400" />
             </div>
             <div>
-              <DialogTitle className="text-xl font-black font-heading uppercase tracking-tight">Customer Details</DialogTitle>
-              <DialogDescription className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">
+              <h2 className="text-xl font-black font-heading uppercase tracking-tight">Customer Details</h2>
+              <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">
                 Enter name & phone for loyalty tracking
-              </DialogDescription>
+              </p>
             </div>
           </div>
-        </DialogHeader>
+        </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="space-y-4">

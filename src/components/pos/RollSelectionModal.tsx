@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/services/api';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from '@/components/ui/dialog';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Plus, Utensils, ChefHat } from 'lucide-react';
@@ -24,7 +32,7 @@ const ROLL_DATA: RollItem[] = [
   { name: "Special Zinger Roll", price: 250, category: 'Special Zinger' },
   { name: "Peri Peri Sauce Zinger Roll", price: 250, category: 'Special Zinger' },
   { name: "Special Pizza Roll", price: 450, category: 'Special Zinger' },
-  
+
   // Bar BQ Rolls
   { name: "Chicken Green Boti Roll", price: 250, category: 'Bar BQ' },
   { name: "Chicken Behari Roll", price: 250, category: 'Bar BQ' },
@@ -40,15 +48,24 @@ export default function RollSelectionModal({ isOpen, onClose, onAdd }: RollSelec
   const [searchQuery, setSearchQuery] = useState('');
   const [quantityPrefix, setQuantityPrefix] = useState<string>('');
 
-  const filteredRolls = ROLL_DATA.filter(r => 
-    r.category === activeTab && 
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: api.products.getAll,
+  });
+
+  const filteredRolls = ROLL_DATA.filter(r =>
+    r.category === activeTab &&
     r.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleAddRoll = (roll: RollItem) => {
     const qty = parseInt(quantityPrefix) || 1;
+
+    // Find matching product from database
+    const dbProduct = allProducts.find(p => p.name === roll.name);
+
     const rollProduct = {
-      id: `roll-${roll.name.toLowerCase().replace(/\s+/g, '-')}`,
+      id: dbProduct?.id || `roll-${roll.name.toLowerCase().replace(/\s+/g, '-')}`,
       name: roll.name,
       price: roll.price,
       category: 'Rolls',
@@ -56,11 +73,11 @@ export default function RollSelectionModal({ isOpen, onClose, onAdd }: RollSelec
       sku: `ROLL-${roll.name.substring(0,3).toUpperCase()}`,
       quantity: qty
     };
-    
+
     for (let i = 0; i < qty; i++) {
       onAdd(rollProduct);
     }
-    
+
     setQuantityPrefix('');
   };
 
@@ -73,7 +90,11 @@ export default function RollSelectionModal({ isOpen, onClose, onAdd }: RollSelec
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden" aria-describedby="roll-selection-description">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Rolls Selection</DialogTitle>
+          <DialogDescription>Select rolls to add to your order.</DialogDescription>
+        </DialogHeader>
         {/* Header */}
         <div className="bg-yellow-500 bg-gradient-to-br from-yellow-500 to-amber-600 px-6 py-5 text-white shrink-0 relative">
           <div className="flex items-center justify-between mb-4">
@@ -82,13 +103,13 @@ export default function RollSelectionModal({ isOpen, onClose, onAdd }: RollSelec
                 <ChefHat className="h-7 w-7" />
               </div>
               <div>
-                <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">Rolls Menu</DialogTitle>
-                <DialogDescription id="roll-selection-description" className="text-yellow-50/80 text-[10px] font-bold uppercase tracking-widest mt-0.5">
-                  Zinger & Bar BQ Special Rolls
-                </DialogDescription>
+                <h2 className="text-2xl font-black font-heading uppercase tracking-tight">Rolls Menu</h2>
+                <p className="text-amber-50/80 text-xs font-bold uppercase tracking-widest mt-0.5">
+                  Tasty rolls for any time
+                </p>
               </div>
             </div>
-            <button 
+            <button
               onClick={onClose}
               className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all active:scale-90"
             >
@@ -137,7 +158,7 @@ export default function RollSelectionModal({ isOpen, onClose, onAdd }: RollSelec
                   <span className="text-xs font-black bg-white text-yellow-600 px-2 py-0.5 rounded-full animate-pulse">
                     Adding {quantityPrefix} items
                   </span>
-                  <button 
+                  <button
                     onClick={() => setQuantityPrefix('')}
                     className="text-[10px] font-bold text-white/50 hover:text-white underline uppercase tracking-tighter"
                   >

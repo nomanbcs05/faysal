@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/services/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -28,14 +30,23 @@ export default function BroastSelectionModal({ isOpen, onClose, onAdd }: BroastS
   const [searchQuery, setSearchQuery] = useState('');
   const [quantityPrefix, setQuantityPrefix] = useState<string>('');
 
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: api.products.getAll,
+  });
+
   const filteredBroast = BROAST_DATA.filter(b => 
     b.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleAddBroast = (broast: BroastItem) => {
     const qty = parseInt(quantityPrefix) || 1;
+    
+    // Find matching product from database
+    const dbProduct = allProducts.find(p => p.name === broast.name);
+    
     const broastProduct = {
-      id: `broast-${broast.name.toLowerCase().replace(/\s+/g, '-')}`,
+      id: dbProduct?.id || `broast-${broast.name.toLowerCase().replace(/\s+/g, '-')}`,
       name: broast.name,
       price: broast.price,
       category: 'Broast',
@@ -60,7 +71,11 @@ export default function BroastSelectionModal({ isOpen, onClose, onAdd }: BroastS
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden" aria-describedby="broast-selection-description">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Broast Selection</DialogTitle>
+          <DialogDescription>Select broast items to add to your order.</DialogDescription>
+        </DialogHeader>
         {/* Header */}
         <div className="bg-orange-500 bg-gradient-to-br from-orange-500 to-red-600 px-6 py-5 text-white shrink-0 relative">
           <div className="flex items-center justify-between mb-4">
@@ -69,10 +84,10 @@ export default function BroastSelectionModal({ isOpen, onClose, onAdd }: BroastS
                 <ChefHat className="h-7 w-7" />
               </div>
               <div>
-                <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">Broast Menu</DialogTitle>
-                <DialogDescription id="broast-selection-description" className="text-orange-50/80 text-[10px] font-bold uppercase tracking-widest mt-0.5">
-                  Crispy • Juicy • Fresh
-                </DialogDescription>
+                <h2 className="text-2xl font-black font-heading uppercase tracking-tight">Broast Selection</h2>
+                <p className="text-orange-50/80 text-[10px] font-bold uppercase tracking-widest mt-0.5">
+                  Crispy and juicy broasted chicken
+                </p>
               </div>
             </div>
             <button 

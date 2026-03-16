@@ -34,14 +34,18 @@ const ArabicBroastModal = ({ isOpen, onClose, products, onAdd }: ArabicBroastMod
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Arabic Broast Selection</DialogTitle>
+          <DialogDescription>Select Arabic Broast items or combos to add to your order.</DialogDescription>
+        </DialogHeader>
         {/* Header Section */}
         <div className="bg-emerald-500 bg-gradient-to-br from-emerald-500 to-emerald-600 px-6 py-5 text-white shrink-0 relative">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <DialogTitle className="text-2xl font-black uppercase tracking-tight">Arabic Broast</DialogTitle>
-              <DialogDescription className="text-emerald-50/80 text-xs font-bold uppercase tracking-widest mt-0.5">
+              <h2 className="text-2xl font-black uppercase tracking-tight">Arabic Broast</h2>
+              <p className="text-emerald-50/80 text-xs font-bold uppercase tracking-widest mt-0.5">
                 Authentic Spicy Injected Broast
-              </DialogDescription>
+              </p>
             </div>
             <button 
               onClick={onClose}

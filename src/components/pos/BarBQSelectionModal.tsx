@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/services/api';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle,
+  DialogDescription 
+} from '@/components/ui/dialog';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Plus, Utensils, ChefHat } from 'lucide-react';
@@ -16,6 +24,7 @@ interface BarBQItem {
   price: number;
 }
 
+// BARBQ_DATA is no longer the primary source, but kept for reference or fallback if needed
 const BARBQ_DATA: BarBQItem[] = [
   { name: "All Flavours Leg Tikka", price: 350 },
   { name: "Green Chicken Tikka Chest", price: 450 },
@@ -33,14 +42,24 @@ export default function BarBQSelectionModal({ isOpen, onClose, onAdd }: BarBQSel
   const [searchQuery, setSearchQuery] = useState('');
   const [quantityPrefix, setQuantityPrefix] = useState<string>('');
 
-  const filteredBarBQ = BARBQ_DATA.filter(b => 
-    b.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: api.products.getAll,
+  });
+
+  // Filter products from the database that are categorized as 'BAR BQ'
+  const filteredBarBQ = allProducts.filter(p => 
+    p.category === 'BAR BQ' && p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleAddBarBQ = (item: BarBQItem) => {
     const qty = parseInt(quantityPrefix) || 1;
+    
+    // Find matching product from database (already filtered, so item should be a dbProduct)
+    const dbProduct = allProducts.find(p => p.name === item.name);
+    
     const bbqProduct = {
-      id: `barbq-${item.name.toLowerCase().replace(/\s+/g, '-')}`,
+      id: dbProduct?.id || `barbq-${item.name.toLowerCase().replace(/\s+/g, '-')}`,
       name: item.name,
       price: item.price,
       category: 'BAR BQ',
@@ -65,19 +84,23 @@ export default function BarBQSelectionModal({ isOpen, onClose, onAdd }: BarBQSel
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden" aria-describedby="barbq-selection-description">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Bar BQ Selection</DialogTitle>
+          <DialogDescription>Select Bar BQ items to add to your order.</DialogDescription>
+        </DialogHeader>
         {/* Header */}
-        <div className="bg-slate-900 bg-gradient-to-br from-slate-900 to-slate-800 px-6 py-5 text-white shrink-0 relative">
+        <div className="bg-slate-900 px-6 py-5 text-white shrink-0 relative">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white/10 rounded-lg">
                 <ChefHat className="h-7 w-7 text-orange-500" />
               </div>
               <div>
-                <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">BAR BQ Menu</DialogTitle>
-                <DialogDescription id="barbq-selection-description" className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-0.5">
-                  Fresh & Smoky Charcoal Grill
-                </DialogDescription>
+                <h2 className="text-2xl font-black font-heading uppercase tracking-tight">Bar BQ Selection</h2>
+                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-0.5">
+                  Select from our fresh grilled items
+                </p>
               </div>
             </div>
             <button 

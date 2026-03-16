@@ -78,14 +78,13 @@ const StartDayModal = ({ isOpen, onSuccess, onClose, forceNewSession = false }: 
         hideCloseButton={!onClose}
         onPointerDownOutside={(e) => { if (!onClose) e.preventDefault(); }}
         onEscapeKeyDown={(e) => { if (!onClose) e.preventDefault(); }}
-        aria-describedby="start-day-description"
       >
         <div className="flex justify-between items-center mb-2">
           <DialogHeader className="flex-1">
             <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight text-slate-900">
               {forceNewSession ? 'Start New Session' : 'Start of Day'}
             </DialogTitle>
-            <DialogDescription id="start-day-description" className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1.5 leading-relaxed">
+            <DialogDescription className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1.5 leading-relaxed">
               {forceNewSession 
                 ? 'Starting a new session will clear existing order history.' 
                 : 'Please enter details to begin the shift.'}

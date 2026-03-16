@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/services/api';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Plus, Pizza, ChevronRight } from 'lucide-react';
@@ -29,7 +37,7 @@ const PIZZA_DATA: PizzaFlavor[] = [
   { name: "Creamy Pizza", category: 'Classic', prices: { Small: 450, Medium: 800, Large: 1050, Jumbo: 1250 } },
   { name: "Cheese Lover Pizza", category: 'Classic', prices: { Small: 450, Medium: 800, Large: 1050, Jumbo: 1250 } },
   { name: "Vegetable Lover Pizza", category: 'Classic', prices: { Small: 450, Medium: 800, Large: 1050, Jumbo: 1250 } },
-  
+
   // Premium Flavors
   { name: "Special Crown Crust Pizza", category: 'Premium', prices: { Medium: 1000, Large: 1300, Jumbo: 1500 } },
   { name: "Special Kabab Crown Crust", category: 'Premium', prices: { Medium: 1000, Large: 1300, Jumbo: 1500 } },
@@ -47,27 +55,37 @@ export default function PizzaSelectionModal({ isOpen, onClose, onAdd }: PizzaSel
   const [searchQuery, setSearchQuery] = useState('');
   const [quantityPrefix, setQuantityPrefix] = useState<string>('');
 
-  const filteredFlavors = PIZZA_DATA.filter(f => 
-    f.category === activeTab && 
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: api.products.getAll,
+  });
+
+  const filteredFlavors = PIZZA_DATA.filter(f =>
+    f.category === activeTab &&
     f.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleAddPizza = (flavor: string, size: PizzaSize, price: number) => {
     const qty = parseInt(quantityPrefix) || 1;
+    const productName = `${flavor} (${size})`;
+
+    // Find matching product from database
+    const dbProduct = allProducts.find(p => p.name === productName);
+
     const pizzaProduct = {
-      id: `pizza-${flavor.toLowerCase().replace(/\s+/g, '-')}-${size.toLowerCase()}`,
-      name: `${flavor} (${size})`,
+      id: dbProduct?.id || `pizza-${flavor.toLowerCase().replace(/\s+/g, '-')}-${size.toLowerCase()}`,
+      name: productName,
       price: price,
       category: 'Pizzas',
       image: '🍕',
       sku: `PIZZA-${flavor.substring(0,3).toUpperCase()}-${size.charAt(0)}`,
       quantity: qty
     };
-    
+
     for (let i = 0; i < qty; i++) {
       onAdd(pizzaProduct);
     }
-    
+
     setQuantityPrefix('');
   };
 
@@ -80,9 +98,13 @@ export default function PizzaSelectionModal({ isOpen, onClose, onAdd }: PizzaSel
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden" aria-describedby="pizza-selection-description">
+      <DialogContent className="max-w-4xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Pizza Selection</DialogTitle>
+          <DialogDescription>Select pizza flavor and size to add to your order.</DialogDescription>
+        </DialogHeader>
         {/* Header */}
-        <DialogHeader className="p-0">
+        <div className="p-0">
           <div className="bg-orange-500 bg-gradient-to-br from-orange-500 to-red-600 px-6 py-5 text-white shrink-0 relative">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -90,13 +112,13 @@ export default function PizzaSelectionModal({ isOpen, onClose, onAdd }: PizzaSel
                   <Pizza className="h-7 w-7" />
                 </div>
                 <div>
-                  <DialogTitle className="text-2xl font-black uppercase tracking-tight">Pizza Menu</DialogTitle>
-                  <DialogDescription id="pizza-selection-description" className="text-orange-50/80 text-[10px] font-bold uppercase tracking-widest mt-0.5">
+                  <h2 className="text-2xl font-black uppercase tracking-tight">Pizza Menu</h2>
+                  <p className="text-orange-50/80 text-[10px] font-bold uppercase tracking-widest mt-0.5">
                     Select flavor & size
-                  </DialogDescription>
+                  </p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={onClose}
                 className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all active:scale-90"
               >
@@ -145,7 +167,7 @@ export default function PizzaSelectionModal({ isOpen, onClose, onAdd }: PizzaSel
                   <span className="text-xs font-black bg-white text-orange-600 px-2 py-0.5 rounded-full animate-pulse">
                     Adding {quantityPrefix} items
                   </span>
-                  <button 
+                  <button
                     onClick={() => setQuantityPrefix('')}
                     className="text-[10px] font-bold text-white/50 hover:text-white underline uppercase tracking-tighter"
                   >
