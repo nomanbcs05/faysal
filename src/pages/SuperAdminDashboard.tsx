@@ -1,7 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { supabaseSignup } from '@/integrations/supabase/supabaseAdmin';
+import { supabase, supabaseAdmin } from '@/integrations/supabase/client';
 import SuperAdminLayout from '@/components/layout/SuperAdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -109,7 +108,7 @@ const SuperAdminDashboard = () => {
         throw new Error('Invalid email address');
       }
 
-      const { data: authData, error: authError } = await supabaseSignup.auth.signUp({
+      const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
         email, password,
         options: { data: { full_name: fullName } },
       });
@@ -131,7 +130,7 @@ const SuperAdminDashboard = () => {
         .single();
       if (restError) throw new Error(`Restaurant: ${restError.message}`);
 
-      const { error: profileError } = await supabaseSignup
+      const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .upsert({ id: userId, restaurant_id: restaurant.id, full_name: fullName, role: 'admin' });
       if (profileError) throw new Error(`Profile: ${profileError.message}`);

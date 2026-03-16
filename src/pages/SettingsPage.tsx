@@ -13,8 +13,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { toast } from 'sonner';
 import { useEffect, useRef, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { supabaseSignup } from '@/integrations/supabase/supabaseAdmin';
+import { supabase, supabaseAdmin } from '@/integrations/supabase/client';
 
 const SettingsPage = () => {
   const { profile, restaurant, isAdmin } = useMultiTenant();
@@ -157,7 +156,7 @@ const SettingsPage = () => {
       if (!staffEmail || !staffPassword || !staffName) throw new Error('All fields are required');
 
       // 1. Create Auth User (using isolated client to avoid logout)
-      const { data: authData, error: authError } = await supabaseSignup.auth.signUp({
+      const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
         email: staffEmail,
         password: staffPassword,
         options: {
