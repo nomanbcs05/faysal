@@ -126,7 +126,7 @@ export default function PizzaSelectionModal({ isOpen, onClose, onAdd }: PizzaSel
               </button>
             </div>
 
-          <div className="flex gap-4 items-center mb-4">
+            <div className="flex gap-4 items-center mb-4">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-100/50" />
               <Input
@@ -194,7 +194,7 @@ export default function PizzaSelectionModal({ isOpen, onClose, onAdd }: PizzaSel
             </div>
           </div>
         </div>
-      </DialogHeader>
+      </div>
 
         {/* Matrix Header */}
         <div className="grid grid-cols-[1fr,repeat(4,100px)] gap-4 px-8 py-3 bg-slate-50 border-b border-slate-100 shrink-0">
