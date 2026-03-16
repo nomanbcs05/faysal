@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { licenseService, LicenseData } from "@/services/licenseService";
 import { Button } from "@/components/ui/button";
@@ -19,9 +19,9 @@ export const LicenseGate = ({ children }: { children?: React.ReactNode }) => {
     if (!isLoading) {
       checkSubscription();
     }
-  }, [isLoading, restaurant, session, profile]);
+  }, [isLoading, checkSubscription]);
 
-  const checkSubscription = () => {
+  const checkSubscription = useCallback(() => {
     // 1. If not logged in, allow access to Auth pages
     if (!session) {
       setIsValid(true);
@@ -57,7 +57,7 @@ export const LicenseGate = ({ children }: { children?: React.ReactNode }) => {
     }
     
     setChecking(false);
-  };
+  }, [session, profile, restaurant]);
 
   if (isLoading || checking) {
     return (

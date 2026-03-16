@@ -44,22 +44,6 @@ const CustomersPage = () => {
     queryFn: api.customers.getAll,
   });
 
-  if (isError) {
-    return (
-      <MainLayout>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center space-y-4">
-            <p className="text-destructive font-medium">Failed to load customers</p>
-            <p className="text-sm text-muted-foreground">{error instanceof Error ? error.message : 'Unknown error'}</p>
-            <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['customers'] })}>
-              Retry
-            </Button>
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
-
   const addCustomerMutation = useMutation({
     mutationFn: api.customers.create,
     onSuccess: () => {
@@ -102,6 +86,32 @@ const CustomersPage = () => {
     },
   });
 
+  const fuse = useMemo(() => new Fuse(customers, {
+    keys: ['name', 'phone', 'email'],
+    threshold: 0.3,
+  }), [customers]);
+
+  const filteredCustomers = useMemo(() => {
+    if (!searchQuery.trim()) return customers;
+    return fuse.search(searchQuery).map(r => r.item);
+  }, [searchQuery, fuse, customers]);
+
+  if (isError) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center space-y-4">
+            <p className="text-destructive font-medium">Failed to load customers</p>
+            <p className="text-sm text-muted-foreground">{error instanceof Error ? error.message : 'Unknown error'}</p>
+            <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['customers'] })}>
+              Retry
+            </Button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
   const handleAddCustomer = () => {
     if (!newCustomer.name) {
       toast({
@@ -118,16 +128,6 @@ const CustomersPage = () => {
       email: newCustomer.email,
     });
   };
-
-  const fuse = useMemo(() => new Fuse(customers, {
-    keys: ['name', 'phone', 'email'],
-    threshold: 0.3,
-  }), [customers]);
-
-  const filteredCustomers = useMemo(() => {
-    if (!searchQuery.trim()) return customers;
-    return fuse.search(searchQuery).map(r => r.item);
-  }, [searchQuery, fuse, customers]);
 
   return (
     <MainLayout>

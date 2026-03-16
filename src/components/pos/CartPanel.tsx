@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Minus, Plus, Trash2, User, Search, X, Printer, Wallet, ChefHat, FileText, Tag, CheckCircle2 } from 'lucide-react';
@@ -239,13 +239,17 @@ const CartPanel = () => {
     },
   });
 
-  const performShowBill = async () => {
-    const orderData = await prepareOrderData();
-    setLastOrder(orderData);
+  const performShowBill = useCallback(async () => {
+    const billData = await prepareOrderData();
+    setLastOrder(billData);
     setShowBill(true);
-  };
+    // Print after render
+    setTimeout(() => {
+      handlePrintBill();
+    }, 500);
+  }, [prepareOrderData, handlePrintBill]);
 
-  const prepareOrderData = async (): Promise<{
+  const prepareOrderData = useCallback(async (): Promise<{
     id?: string;
     orderNumber: string;
     items: typeof items;
@@ -291,7 +295,7 @@ const CartPanel = () => {
       createdAt: new Date(),
       cashierName, // Use real cashier name
     };
-  };
+  }, [items, customer, rider, customerAddress, serverName, tableId, orderType, subtotal, taxAmount, discountAmount, deliveryFee, total, paymentMethod, cashierName]);
 
   const createKOTOrderMutation = useMutation({
     mutationFn: async (orderData: { order: any; items: any[] }) => {
@@ -373,7 +377,7 @@ const CartPanel = () => {
     await performShowBill();
   };
 
-  const performCompleteSale = async () => {
+  const performCompleteSale = useCallback(async () => {
     const orderInsert = {
       customer_id: customer?.id ? parseInt(customer.id) : null,
       total_amount: total,
@@ -400,7 +404,7 @@ const CartPanel = () => {
         toast.dismiss(toastId);
       }
     });
-  };
+  }, [customer, total, paymentMethod, orderType, tableId, items, prepareOrderData, createOrderMutation]);
 
   const handleCompleteSale = async () => {
     if (items.length === 0) {
@@ -436,7 +440,7 @@ const CartPanel = () => {
     } else if (action === 'complete') {
       performCompleteSale();
     }
-  }, [orderType, rider, pendingAfterRider]);
+  }, [orderType, rider, pendingAfterRider, performShowBill, performCompleteSale]);
 
   return (
     <div className="flex flex-col h-full bg-card border-l font-sans">

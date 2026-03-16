@@ -56,6 +56,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Separator } from '@/components/ui/separator';
 import { api } from '@/services/api';
+import { OrderWithDetails, Product, Category, FormattedOrder, KOTFormattedOrder } from '@/types';
 
 const OrdersPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -70,26 +71,26 @@ const OrdersPage = () => {
   const kotRef = useRef<HTMLDivElement>(null);
   const billRef = useRef<HTMLDivElement>(null);
   const productSummaryRef = useRef<HTMLDivElement>(null);
-  const [printingOrder, setPrintingOrder] = useState<any>(null);
-  const [printingKOTOrder, setPrintingKOTOrder] = useState<any>(null);
-  const [billOrder, setBillOrder] = useState<any>(null);
+  const [printingOrder, setPrintingOrder] = useState<FormattedOrder | null>(null);
+  const [printingKOTOrder, setPrintingKOTOrder] = useState<KOTFormattedOrder | null>(null);
+  const [billOrder, setBillOrder] = useState<FormattedOrder | null>(null);
   const [showBill, setShowBill] = useState(false);
-  const [viewingOrder, setViewingOrder] = useState<any>(null);
+  const [viewingOrder, setViewingOrder] = useState<OrderWithDetails | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [productQuery, setProductQuery] = useState('');
-  const [productOrdersWithItems, setProductOrdersWithItems] = useState<any[]>([]);
+  const [productOrdersWithItems, setProductOrdersWithItems] = useState<OrderWithDetails[]>([]);
   const [showProductSummaryModal, setShowProductSummaryModal] = useState(false);
   const [productSearch, setProductSearch] = useState('');
-  const { data: products = [] } = useQuery({
+  const { data: products = [] } = useQuery<Product[]>({
     queryKey: ['products'],
     queryFn: api.products.getAll,
   });
-  const { data: categories = [] } = useQuery({
+  const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['categories'],
     queryFn: api.categories.getAll,
   });
 
-  const { data: orders = [], isLoading, isError, error } = useQuery({
+  const { data: orders = [], isLoading, isError, error } = useQuery<OrderWithDetails[]>({
     queryKey: ['orders'],
     queryFn: api.orders.getAll,
   });
@@ -115,7 +116,7 @@ const OrdersPage = () => {
       const targetDate = date?.from ? date.from : new Date();
       const start = startOfDay(targetDate);
       const end = endOfDay(targetDate);
-      const dayOrders = orders.filter((o: any) => {
+      const dayOrders = orders.filter((o: OrderWithDetails) => {
         const d = new Date(o.created_at);
         return d >= start && d <= end && o.status === 'completed';
       });
@@ -124,7 +125,7 @@ const OrdersPage = () => {
         return;
       }
       const fullOrders = await Promise.all(
-        dayOrders.map(async (o: any) => {
+        dayOrders.map(async (o: OrderWithDetails) => {
           try {
             return await api.orders.getByIdWithItems(o.id);
           } catch {
@@ -132,7 +133,7 @@ const OrdersPage = () => {
           }
         })
       );
-      const valid = fullOrders.filter(Boolean) as any[];
+      const valid = fullOrders.filter(Boolean) as OrderWithDetails[];
       if (valid.length === 0) {
         toast.error('Failed to load order items for summary');
         return;
@@ -197,8 +198,8 @@ const OrdersPage = () => {
 
       const formattedOrder = {
         orderNumber: dailyId || fullOrder.id.slice(0, 8),
-        items: fullOrder.order_items.map((item: any) => {
-          const fallbackProduct = (products as any[])?.find?.((p: any) => p.id === item?.product_id) || {};
+        items: fullOrder.order_items.map((item) => {
+          const fallbackProduct = (products as Product[])?.find?.((p: Product) => p.id === item?.product_id) || {} as Product;
           const name = item.products?.name || item.product_name || fallbackProduct.name || 'Unknown Product';
           const price = item.price ?? item.products?.price ?? fallbackProduct.price ?? 0;
           const image = item.products?.image || fallbackProduct.image || '🍽️';
@@ -233,7 +234,7 @@ const OrdersPage = () => {
         orderType: fullOrder.order_type,
         createdAt: new Date(fullOrder.created_at),
         cashierName: 'Cashier',
-        serverName: ((fullOrder as any).server_name || '').replace(/^\[.*?\]\s*/, ''),
+        serverName: ((fullOrder as OrderWithDetails).server_name || '').replace(/^\[.*?\]\s*/, ''),
         tableId: (fullOrder as any).restaurant_tables?.table_number
       };
 
@@ -369,21 +370,9 @@ const OrdersPage = () => {
     }
   });
 
-  if (isError) {
-    return (
-      <MainLayout>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center space-y-4">
-            <p className="text-destructive font-medium">Failed to load orders</p>
-            <p className="text-sm text-muted-foreground">{error instanceof Error ? error.message : 'Unknown error'}</p>
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
-
   // Calculate daily IDs for today's orders
   const ordersWithDailyId = useMemo(() => {
+    if (!orders || !todayOrders) return [];
     // 1. Get all orders from today (already sorted in memo or sort here)
     const sortedTodayOrders = [...todayOrders].sort((a: any, b: any) =>
       new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
@@ -401,6 +390,19 @@ const OrdersPage = () => {
       dailyId: dailyIdMap.get(order.id)
     }));
   }, [orders, todayOrders]);
+
+  if (isError) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center space-y-4">
+            <p className="text-destructive font-medium">Failed to load orders</p>
+            <p className="text-sm text-muted-foreground">{error instanceof Error ? error.message : 'Unknown error'}</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   const filteredOrders = ordersWithDailyId.filter((order: any) => {
     const customerName = order.customers?.name || 'Walk-in Customer';

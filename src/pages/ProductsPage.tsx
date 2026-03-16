@@ -66,22 +66,6 @@ const ProductsPage = () => {
     queryFn: api.categories.getAll,
   });
 
-  if (isError) {
-    return (
-      <MainLayout>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center space-y-4">
-            <p className="text-destructive font-medium">Failed to load products</p>
-            <p className="text-sm text-muted-foreground">{error instanceof Error ? error.message : 'Unknown error'}</p>
-            <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['products'] })}>
-              Retry
-            </Button>
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
-
   const addProductMutation = useMutation({
     mutationFn: api.products.create,
     onSuccess: () => {
@@ -188,6 +172,22 @@ const ProductsPage = () => {
       });
     },
   });
+
+  if (isError) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center space-y-4">
+            <p className="text-destructive font-medium">Failed to load products</p>
+            <p className="text-sm text-muted-foreground">{error instanceof Error ? error.message : 'Unknown error'}</p>
+            <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['products'] })}>
+              Retry
+            </Button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

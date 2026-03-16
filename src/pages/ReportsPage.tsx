@@ -10,6 +10,7 @@ import { useState, useMemo, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { DailyReport } from '@/components/pos/DailyReport';
 import CloseDayModal from '@/components/pos/CloseDayModal';
+import { OrderItem, Category } from '@/types';
 import { 
   startOfDay, 
   startOfWeek, 
@@ -130,9 +131,9 @@ const ReportsPage = () => {
     const categoryMap = new Map<string, number>();
     currentOrders.forEach(order => {
       if (order.order_items) {
-        order.order_items.forEach((item: any) => {
+        order.order_items.forEach((item: OrderItem & { products: any }) => {
           const categoryId = item.products?.category || item.product_category;
-          const categoryName = categories.find((c: any) => c.id === categoryId)?.name || categoryId || 'Unknown';
+          const categoryName = (categories as Category[]).find((c: Category) => c.id === categoryId)?.name || categoryId || 'Unknown';
           const value = Number(item.price) * item.quantity;
           categoryMap.set(categoryName, (categoryMap.get(categoryName) || 0) + value);
         });
@@ -150,7 +151,7 @@ const ReportsPage = () => {
     const productMap = new Map<string, { sold: number, revenue: number }>();
     currentOrders.forEach(order => {
       if (order.order_items) {
-        order.order_items.forEach((item: any) => {
+        order.order_items.forEach((item: OrderItem & { products: any }) => {
           const name = item.products?.name || item.product_name || 'Unknown';
           const existing = productMap.get(name) || { sold: 0, revenue: 0 };
           productMap.set(name, {

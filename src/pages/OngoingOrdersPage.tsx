@@ -311,7 +311,7 @@ const OngoingOrdersPage = () => {
         handlePrintBill();
       }, 500);
     }
-  }, [showBill, billOrder]);
+  }, [showBill, billOrder, handlePrintBill]);
 
   const filteredOrders = useMemo(() => {
     let result = orders;
