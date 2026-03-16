@@ -63,7 +63,7 @@ const CartPanel = () => {
   const [showRiderModal, setShowRiderModal] = useState(false);
   const [pendingAfterRider, setPendingAfterRider] = useState<'none' | 'bill' | 'complete'>('none');
   const [lastOrder, setLastOrder] = useState<any>(null);
-  const [cashierName, setCashierName] = useState('Anas');
+  const [cashierName, setCashierName] = useState('Staff');
   const receiptRef = useRef<HTMLDivElement>(null);
   const kotRef = useRef<HTMLDivElement>(null);
   const billRef = useRef<HTMLDivElement>(null);
@@ -73,12 +73,8 @@ const CartPanel = () => {
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user?.email) {
-        if (user.email?.toLowerCase() === 'atifzaidi1978@gmail.com') {
-          setCashierName('Anas');
-        } else {
-          setCashierName(user.user_metadata?.name || user.email.split('@')[0]);
-        }
+      if (user) {
+        setCashierName(user.user_metadata?.full_name || user.email?.split('@')[0] || 'Staff');
       }
     };
     fetchUser();
@@ -121,12 +117,14 @@ const CartPanel = () => {
     [tables, tableId]
   );
 
-  const { data: openRegister } = useQuery({
+  const { data: openRegister, isLoading: isRegisterLoading } = useQuery({
     queryKey: ['open-register'],
     queryFn: api.registers.getOpen,
     retry: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
+
+  const isRegisterOpen = !!openRegister;
 
   const createOrderMutation = useMutation({
     mutationFn: async (orderData: any) => {
@@ -644,12 +642,29 @@ const CartPanel = () => {
 
         {/* Action Buttons */}
         <div className="flex flex-col gap-2">
+          {!isRegisterOpen && !isRegisterLoading && (
+            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-xl mb-2">
+              <p className="text-[10px] font-black font-heading uppercase tracking-widest text-destructive text-center">
+                Shift is not started. Please open daily register to start sales.
+              </p>
+            </div>
+          )}
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11 border-2 border-emerald-500/20 hover:bg-emerald-50 hover:text-emerald-600 transition-all" onClick={handleDone} disabled={items.length === 0}>
+            <Button 
+              variant="outline" 
+              className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11 border-2 border-emerald-500/20 hover:bg-emerald-50 hover:text-emerald-600 transition-all" 
+              onClick={handleDone} 
+              disabled={items.length === 0 || !isRegisterOpen}
+            >
               <ChefHat className="h-4 w-4 mr-2" />
               Send to Kitchen
             </Button>
-            <Button variant="outline" className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11" onClick={handleShowBill} disabled={items.length === 0}>
+            <Button 
+              variant="outline" 
+              className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11" 
+              onClick={handleShowBill} 
+              disabled={items.length === 0 || !isRegisterOpen}
+            >
               <FileText className="h-4 w-4 mr-2" />
               Bill
             </Button>
@@ -667,7 +682,7 @@ const CartPanel = () => {
             <Button
               className="flex-[2] btn-success font-black font-heading uppercase tracking-widest text-sm h-11 shadow-lg shadow-emerald-500/20"
               onClick={handleCompleteSale}
-              disabled={items.length === 0}
+              disabled={items.length === 0 || !isRegisterOpen}
             >
               <Printer className="h-4 w-4 mr-2" />
               Complete Sale

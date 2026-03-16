@@ -1,4 +1,4 @@
-import { TrendingUp, DollarSign, ShoppingCart, Users, Package, ArrowUpRight, ArrowDownRight, Loader2, Printer } from 'lucide-react';
+import { TrendingUp, DollarSign, ShoppingCart, Users, Package, ArrowUpRight, ArrowDownRight, Loader2, Printer, LogOut } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -9,6 +9,7 @@ import { api } from '@/services/api';
 import { useState, useMemo, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { DailyReport } from '@/components/pos/DailyReport';
+import CloseDayModal from '@/components/pos/CloseDayModal';
 import { 
   startOfDay, 
   startOfWeek, 
@@ -25,10 +26,18 @@ import {
 
 const ReportsPage = () => {
   const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>('month');
+  const [showCloseModal, setShowCloseModal] = useState(false);
 
   const { data, isLoading: isReportsLoading, isError, error } = useQuery({
     queryKey: ['reports-data'],
     queryFn: api.reports.getDashboardStats,
+  });
+
+  const { data: openRegister } = useQuery({
+    queryKey: ['open-register'],
+    queryFn: api.registers.getOpen,
+    retry: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const { data: categories = [] } = useQuery({
@@ -206,6 +215,15 @@ const ReportsPage = () => {
               <p className="text-muted-foreground">Business performance overview</p>
             </div>
             <div className="flex gap-2">
+              <Button 
+                variant="outline"
+                className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 font-bold uppercase tracking-widest text-[10px] h-10 px-4"
+                onClick={() => setShowCloseModal(true)}
+                disabled={!openRegister}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Close Shift
+              </Button>
               <Button 
                 variant="outline"
                 onClick={() => handlePrintDailyReport()}
@@ -411,6 +429,15 @@ const ReportsPage = () => {
       <div style={{ display: 'none' }}>
         <DailyReport ref={dailyReportRef} date={new Date()} orders={todayOrders} />
       </div>
+
+      {openRegister && (
+        <CloseDayModal 
+          isOpen={showCloseModal}
+          onClose={() => setShowCloseModal(false)}
+          registerId={openRegister.id}
+          startingAmount={openRegister.starting_amount}
+        />
+      )}
     </MainLayout>
   );
 };

@@ -142,18 +142,18 @@ const CustomersPage = () => {
               </p>
             </div>
             
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Customer
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Add New Customer</DialogTitle>
+                  <DialogTitle>{editingCustomer ? 'Edit Customer' : 'Add New Customer'}</DialogTitle>
                   <DialogDescription>
-                    Enter the details of the new customer below.
+                    {editingCustomer ? 'Update the details for the selected customer.' : 'Enter the customer details below to add them to your database.'}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">

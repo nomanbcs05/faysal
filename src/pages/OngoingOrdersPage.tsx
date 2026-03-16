@@ -899,20 +899,21 @@ const OngoingOrdersPage = () => {
       {/* Bill Print Dialog */}
       <Dialog open={showBill} onOpenChange={setShowBill}>
         <DialogContent className="max-w-md" aria-describedby="ongoing-bill-description">
-          <DialogHeader>
+          <DialogHeader className="sr-only">
             <DialogTitle>Bill Preview</DialogTitle>
-            <DialogDescription id="ongoing-bill-description" className="sr-only">Bill for current order</DialogDescription>
+            <DialogDescription id="ongoing-bill-description">Customer bill for the current order.</DialogDescription>
           </DialogHeader>
-          <div className="max-h-[80vh] overflow-auto">
-            {billOrder && (
-              <Bill order={billOrder} />
-            )}
-          </div>
-          <div className="flex gap-3 mt-4">
+          {billOrder && (
+            <div className="max-h-[70vh] overflow-auto">
+              <Bill ref={billRef} order={billOrder} />
+            </div>
+          )}
+          <div className="flex gap-2 mt-4 p-4">
             <Button variant="outline" className="flex-1" onClick={() => setShowBill(false)}>
               Close
             </Button>
             <Button className="flex-1" onClick={() => handlePrintBill()}>
+              <Printer className="h-4 w-4 mr-2" />
               Print Bill
             </Button>
           </div>

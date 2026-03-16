@@ -373,11 +373,11 @@ const ProductsPage = () => {
                     Add Product
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="sm:max-w-md">
                   <DialogHeader>
                     <DialogTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</DialogTitle>
                     <DialogDescription>
-                      {editingProduct ? 'Make changes to your product here.' : 'Add a new product to your inventory.'}
+                      {editingProduct ? 'Update the details for the selected product.' : 'Enter the product details below to add them to your database.'}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">

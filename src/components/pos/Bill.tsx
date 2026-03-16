@@ -32,10 +32,10 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
   const { restaurant } = useMultiTenant();
 
   const logoSrc = restaurant?.logo_url || `/logo.jpeg?v=${Date.now()}`;
-  const name = restaurant?.name || businessInfo.name;
-  const address = restaurant?.address || businessInfo.address;
-  const city = restaurant?.city || businessInfo.city;
-  const phone = restaurant?.phone || businessInfo.phone;
+  const name = restaurant?.name || 'GENX CLOUD POS';
+  const address = restaurant?.address || '';
+  const city = restaurant?.city || '';
+  const phone = restaurant?.phone || '';
   const billFooter =
     restaurant?.bill_footer ||
     '!!!!FOR THE LOVE OF FOOD !!!!';

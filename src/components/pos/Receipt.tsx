@@ -32,12 +32,12 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
   const { restaurant } = useMultiTenant();
 
   const logoSrc = restaurant?.logo_url || `/logo.jpeg?v=${Date.now()}`;
-  const name = restaurant?.name || businessInfo.name;
-  const address = restaurant?.address || businessInfo.address;
-  const city = restaurant?.city || businessInfo.city;
-  const phone = restaurant?.phone || businessInfo.phone;
-  const taxId = restaurant?.tax_id || businessInfo.taxId;
-  const website = restaurant?.website || businessInfo.website;
+  const name = restaurant?.name || 'GENX CLOUD POS';
+  const address = restaurant?.address || '';
+  const city = restaurant?.city || '';
+  const phone = restaurant?.phone || '';
+  const taxId = restaurant?.tax_id || '';
+  const website = restaurant?.website || '';
   const receiptFooter =
     restaurant?.receipt_footer || 'Thank you for your visit! Come back soon!';
   const paymentMethodLabel = {

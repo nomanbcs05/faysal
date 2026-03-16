@@ -744,14 +744,17 @@ const OrdersPage = () => {
         {/* Order Details Modal */}
         <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
           <DialogContent className="max-w-md overflow-hidden p-0 bg-white">
-            <DialogHeader className="pt-4 px-4 pb-2">
-              <DialogTitle className="flex justify-between items-center text-lg">
-                Order Details
-              </DialogTitle>
-              <DialogDescription className="sr-only">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Order Details</DialogTitle>
+              <DialogDescription>
                 Detailed view of order #{viewingOrder?.dailyId || viewingOrder?.id?.slice(0, 8)}
               </DialogDescription>
             </DialogHeader>
+            <div className="pt-4 px-4 pb-2">
+              <h2 className="flex justify-between items-center text-lg font-bold">
+                Order Details
+              </h2>
+            </div>
 
             {viewingOrder && (
               <div className="max-h-[80vh] overflow-y-auto px-1 pb-4">
