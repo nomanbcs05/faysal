@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Lock, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useMultiTenant } from "@/hooks/useMultiTenant";
+import { supabase } from "@/integrations/supabase/client";
 
 export const LicenseGate = ({ children }: { children?: React.ReactNode }) => {
   const { restaurant, isLoading, session, profile } = useMultiTenant();
@@ -113,7 +114,7 @@ export const LicenseGate = ({ children }: { children?: React.ReactNode }) => {
             variant="ghost" 
             className="w-full h-12 rounded-xl text-slate-400 hover:text-white font-black font-heading uppercase tracking-widest mt-2"
             onClick={async () => {
-              await import('@/integrations/supabase/client').then(m => m.supabase.auth.signOut());
+              await supabase.auth.signOut();
               window.location.href = '/login';
             }}
           >

@@ -95,6 +95,31 @@ const OrdersPage = () => {
     queryFn: api.orders.getAll,
   });
 
+  const todayOrders = useMemo(() => {
+    return orders.filter((order: any) => isToday(new Date(order.created_at)));
+  }, [orders]);
+
+  // Calculate daily IDs for today's orders
+  const ordersWithDailyId = useMemo(() => {
+    if (!orders || !todayOrders) return [];
+    // 1. Get all orders from today (already sorted in memo or sort here)
+    const sortedTodayOrders = [...todayOrders].sort((a: any, b: any) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+
+    // 2. Create a map of ID -> Daily Index (1-based)
+    const dailyIdMap = new Map();
+    sortedTodayOrders.forEach((order: any, index: number) => {
+      dailyIdMap.set(order.id, (index + 1).toString().padStart(2, '0'));
+    });
+
+    // 3. Return orders with dailyId attached
+    return orders.map((order: any) => ({
+      ...order,
+      dailyId: dailyIdMap.get(order.id)
+    }));
+  }, [orders, todayOrders]);
+
   const handlePrintSummary = useReactToPrint({
     contentRef: summaryRef,
     documentTitle: `Daily-Summary-${format(new Date(), 'yyyy-MM-dd')}`,
@@ -197,6 +222,8 @@ const OrdersPage = () => {
       const dailyId = ordersWithDailyId.find(o => o.id === orderId)?.dailyId;
 
       const formattedOrder = {
+        id: fullOrder.id,
+        dailyId: dailyId,
         orderNumber: dailyId || fullOrder.id.slice(0, 8),
         items: fullOrder.order_items.map((item) => {
           const fallbackProduct = (products as Product[])?.find?.((p: Product) => p.id === item?.product_id) || {} as Product;
@@ -255,6 +282,8 @@ const OrdersPage = () => {
       const dailyId = ordersWithDailyId.find(o => o.id === orderId)?.dailyId;
 
       const formattedOrder = {
+        id: fullOrder.id,
+        dailyId: dailyId,
         orderNumber: dailyId || fullOrder.id.slice(0, 8),
         items: fullOrder.order_items.map((item: any) => ({
           product: {
@@ -292,6 +321,7 @@ const OrdersPage = () => {
 
       const billData = {
         id: fullOrder.id, // Include order ID for auto-save
+        dailyId: dailyId,
         orderNumber: dailyId || fullOrder.id.slice(0, 8),
         items: fullOrder.order_items?.map((item: any) => ({
           product: {
@@ -344,10 +374,6 @@ const OrdersPage = () => {
     }
   };
 
-  const todayOrders = useMemo(() => {
-    return orders.filter((order: any) => isToday(new Date(order.created_at)));
-  }, [orders]);
-
   const deleteTodayMutation = useMutation({
     mutationFn: api.orders.deleteTodayOrders,
     onSuccess: () => {
@@ -369,27 +395,6 @@ const OrdersPage = () => {
       toast.error(`Failed to clear history: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   });
-
-  // Calculate daily IDs for today's orders
-  const ordersWithDailyId = useMemo(() => {
-    if (!orders || !todayOrders) return [];
-    // 1. Get all orders from today (already sorted in memo or sort here)
-    const sortedTodayOrders = [...todayOrders].sort((a: any, b: any) =>
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    );
-
-    // 2. Create a map of ID -> Daily Index (1-based)
-    const dailyIdMap = new Map();
-    sortedTodayOrders.forEach((order: any, index: number) => {
-      dailyIdMap.set(order.id, (index + 1).toString().padStart(2, '0'));
-    });
-
-    // 3. Return orders with dailyId attached
-    return orders.map((order: any) => ({
-      ...order,
-      dailyId: dailyIdMap.get(order.id)
-    }));
-  }, [orders, todayOrders]);
 
   if (isError) {
     return (

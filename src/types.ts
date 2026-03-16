@@ -15,6 +15,7 @@ export interface OrderWithDetails extends Order {
 
 export interface FormattedOrder {
   id?: string;
+  dailyId?: string;
   orderNumber: string;
   items: {
     product: {
@@ -50,6 +51,8 @@ export interface FormattedOrder {
 }
 
 export interface KOTFormattedOrder {
+  id?: string;
+  dailyId?: string;
   orderNumber: string;
   items: {
     product: {
